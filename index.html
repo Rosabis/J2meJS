@@ -5,11 +5,8 @@
 <title>j2me在线模拟器</title>
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1"> 
-
-<script type="text/javascript" src="libs/axios.min.js"></script>
-
-  <!-- Required for non-UTF encodings -->
-  <script src="libs/encoding-indexes.js"></script>
+ 
+  <!-- Required for non-UTF encodings --> 
   <script src="libs/encoding.js"></script>
   <!-- Load config scripts separately because compiled-method-cache.js
      - depends on them. -->
@@ -293,7 +290,7 @@
 					},
 					(err)=>{
 						alert(err);
-					}, 
+					}
 				);
 			}
 
@@ -311,7 +308,7 @@
 					alert("请选择jar名称!");
 					return;
 				}
-				var jarname = localjars.options[localjars.selectedIndex].innerText;
+				var jarname = localjars.options[localjars.selectedIndex].text;
 				console.log(jarname);
 				openJar(jarname,"",1);
 				
@@ -332,7 +329,7 @@
 					alert("请选择jar名称!");
 					return;
 				}
-				var jarname = localjars.options[localjars.selectedIndex].innerText;
+				var jarname = localjars.options[localjars.selectedIndex].text;
 				console.log(jarname);
 				let res = confirm('确定删除 '+jarname+' ？');
 				if(res)
@@ -349,7 +346,7 @@
 					); 
 				} 
 			} 
-			var onUploadFile = async (e) => {
+			var onUploadFile = function(e){
 				const _files = e.target.files;
 				if (_files.length == 0) {
 					return;
@@ -361,17 +358,21 @@
 					return;
 				}
 				//fs.createUniqueFile("/Phone",_file.name,_file);
-				JARStore.installJAR(_file.name,await _file.arrayBuffer()).then
-				(
-					()=>{ 
-						alert(_file.name+"安装成功！"); 
-						refreshGameList();
-				},  
-					(errname)=>{
-						alert(errname+"安装失败！"); 
-					}
-					);	
-			document.getElementById("jarFileupload").value= null;
+				const reader = new FileReader();
+				reader.readAsArrayBuffer(_file);
+				reader.onload = function(readRes){
+					JARStore.installJAR(_file.name,readRes.target.result).then
+					(
+						()=>{ 
+							alert(_file.name+"安装成功！"); 
+							refreshGameList();
+					},  
+						(errname)=>{
+							alert(errname+"安装失败！"); 
+						}
+						);	
+				document.getElementById("jarFileupload").value= null;
+				}    
 		}
 
 			var config = function() {
@@ -437,10 +438,10 @@
 			{
 				//var mycheck1=document.getElementById('mycheck1'); 
 				//var mycheck2=document.getElementById('mycheck2'); 
-				var href='index2.html?jars=jar/'+jarname+'&jad=&midletClassName='+midletClassName;
+				var href='main.html?jars=jar/'+jarname+'&jad=&midletClassName='+midletClassName;
 				if(islocaljar)
 				{
-					 href='index2.html?localjar='+jarname;
+					 href='main.html?localjar='+jarname;
 				}
 				//if(mycheck1.checked)
 				//{

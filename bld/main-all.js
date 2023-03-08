@@ -5,6 +5,13 @@
 //1是pAudio
 //2是webaudio-tinysynth
 var midimode=2;
+window.AudioContext = window.AudioContext || window.webkitAudioContext
+if(!window.AudioContext)
+{
+  window.AudioContext = function(){
+
+  };
+} 
 
 if (inBrowser && !HTMLCanvasElement.prototype.toBlob) {
   Object.defineProperty(HTMLCanvasElement.prototype, "toBlob", {value:function(callback, type, quality) {
@@ -4019,7 +4026,7 @@ var initFS = (new Promise(function(resolve, reject) {
   define = function(ids, factory) {
     deps = typeof ids === "string" ? factory.slice(2) : ids.slice(2);
     if (nodeJS) {
-      delete define;
+      //delete define;
       return tmpDefine.apply(null, Array.prototype.slice.call(arguments, 0));
     }
     define = tmpDefine;
@@ -4202,7 +4209,7 @@ var initFS = (new Promise(function(resolve, reject) {
   define = function(ids, factory) {
     deps = typeof ids === "string" ? factory.slice(2) : ids.slice(2);
     if (nodeJS) {
-      delete define;
+      //delete define;
       return tmpDefine.apply(null, Array.prototype.slice.call(arguments, 0));
     }
     define = tmpDefine;
@@ -12025,7 +12032,6 @@ function PlayerContainer(url, pId) {
   this.loadSize = 0;
   this.data = null;
   this.player = null;
-  window.AudioContext = window.AudioContext || window.webkitAudioContext
   this.audioCtx = new AudioContext()
   if(midimode==1)
   {  
@@ -13279,6 +13285,7 @@ document.getElementById("fire").onmouseup = function() {
   MIDP.sendKeyRelease(32);
 };
 */
+
 var Location = {};
 Location.PROVIDER_NAME = "browser";
 Location.Providers = {};
@@ -13397,6 +13404,7 @@ var createLongArrayFromDoubles = function() {
 }();
 AccelerometerSensor.channels = [{scale:0, name:"axis_x", unit:"m/s^2", dataType:1, accuracy:1, mrangeArray:createLongArrayFromDoubles([-19.6, 19.6, .153])}, {scale:0, name:"axis_y", unit:"m/s^2", dataType:1, accuracy:1, mrangeArray:createLongArrayFromDoubles([-19.6, 19.6, .153])}, {scale:0, name:"axis_z", unit:"m/s^2", dataType:1, accuracy:1, mrangeArray:createLongArrayFromDoubles([-19.6, 19.6, .153])}];
 AccelerometerSensor.simulator = {_intervalId:-1, start:function() {
+   
   var currentMouseX = -1;
   var currentMouseY = -1;
   var c = MIDP.deviceContext.canvas;
@@ -14242,6 +14250,7 @@ perfWriterCheckbox.addEventListener("change", function() {
     J2ME.writers &= !J2ME.WriterFlags.Perf;
   }
 });
+ 
 var profiler = profile === 1 ? function() {
   var elPageContainer = document.getElementById("pageContainer");
   elPageContainer.classList.add("profile-mode");
@@ -14327,3 +14336,4 @@ var profiler = profile === 1 ? function() {
 }() : undefined;
 
 //# sourceMappingURL=main-all.js.map
+ 
