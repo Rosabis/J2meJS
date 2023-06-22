@@ -180,8 +180,10 @@ function refreshGameList()
 					switch(mffile.compression_method) {
 					  case 0:
 					    mfdata= mffile.compressed_data;
+						break;
 					  case 8:
 					    mfdata = inflate(mffile.compressed_data, mffile.uncompressed_len);
+						break;
 					}
 					mfdata=new TextDecoder('utf-8').decode(mfdata);
 					console.log(mfdata);
@@ -206,10 +208,12 @@ function refreshGameList()
 					switch(iconfile.compression_method) {
 					  case 0:
 					    iconfiledata= iconfile.compressed_data;
+						break;
 					  case 8:
-					    iconfiledata = inflate(iconfile.compressed_data, iconfile.uncompressed_len);
+					    iconfiledata = new Uint8Array(inflate(iconfile.compressed_data, iconfile.uncompressed_len));
+						break;
 					}
-					var bytes = new Uint8Array(iconfiledata);
+					var bytes = iconfiledata;
 					var blob = new Blob([bytes], { type: "image/png" });
 					var url = URL.createObjectURL(blob);  
                     listapp.push(' <div class="listitem" focusable> <image class="jaricon" src="'+url+'"></image> <div id="jarname" style="display:none">'+res.jarName+'</div> <div id="jarmid" style="display:none">'+jarmid+'</div> <div class="listtext">' + name + '</div></div>');
