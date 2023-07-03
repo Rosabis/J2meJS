@@ -6,7 +6,8 @@ var mytitle="";
 var mycontent="";
 //1是pAudio
 //2是webaudio-tinysynth
-var midimode=2;
+//3是Audio标签
+var midimode=3;
 window.AudioContext = window.AudioContext || window.webkitAudioContext
 if(!window.AudioContext)
 {
@@ -12104,6 +12105,10 @@ function PlayerContainer(url, pId) {
   else if(midimode==2){
     this.tinysynth= new WebAudioTinySynth();
   }
+  else if(midimode==3)
+  { 
+    this.audio= new Audio();
+  }
   //this.amr = new BenzAMRRecorder();
   console.log("PlayerContainer",this.pId);
 }
@@ -12210,6 +12215,13 @@ PlayerContainer.prototype.close = function() {
       this.tinysynth.stopMIDI();
     }
   } 
+  else if(midimode==3){
+    if(this.audio)
+    { 
+      this.audio.stop();
+    }
+  } 
+
 };
 PlayerContainer.prototype.getMediaTime = function() { 
  
@@ -12224,6 +12236,13 @@ PlayerContainer.prototype.getMediaTime = function() {
       return this.tinysynth.getAudioContext().currentTime*100*10000;;
     }
   } 
+  if(midimode==3)
+  {
+    if(this.audio)
+    {
+      this.audio.currentTime*100*10000;;
+    }
+  }
 
   //console.log("this.audioCtx.currentTime",this.audioCtx.currentTime); 
   return this.audioCtx.currentTime*100*10000;;
@@ -12247,6 +12266,15 @@ PlayerContainer.prototype.setMediaTime = function(longtime) {
         return this.tinysynth.getAudioContext().currentTime;
     }
   }
+  if(midimode==3)
+  {
+    if(this.audio)
+    {
+      this.audio.currentTime = longtime/100/10000;
+      return longtime;
+    }
+  }
+
   //console.log(this.audioCtx.currentTime);
 
   //  this.source = this.audioCtx.createBufferSource();  
@@ -12427,6 +12455,14 @@ PlayerContainer.prototype.writeBuffer = function(buffer,resolve,bufferSize) {
       resolve(bufferSize);
     }
   }  
+  else if(midimode==3){
+    if(this.audio)
+    { 
+      var blob=new Blob([uint8],{"type":"audio/mid"});   
+      this.audio.src = URL.createObjectURL(blob);
+      resolve(bufferSize);
+    }
+  }  
 }
   catch(err)
   {
@@ -12466,6 +12502,12 @@ PlayerContainer.prototype.start = function() {
       this.tinysynth.playMIDI();
     }
   } 
+  else if(midimode==3){
+    if(this.audio)
+    { 
+      this.audio.play();
+    }
+  } 
   }catch(err)
   {
     console.log(err);
@@ -12497,7 +12539,13 @@ PlayerContainer.prototype.pause = function() {
       { 
         this.tinysynth.stopMIDI();
       }
-    } 
+    }else if(midimode==3)
+    {  
+      if(this.audio)
+      {
+        this.audio.pause();
+      }
+    }
   }catch(err)
   {
     console.log(err);
@@ -12530,6 +12578,13 @@ PlayerContainer.prototype.resume = function() {
       this.tinysynth.getAudioContext().play();
     }
   } 
+  else if(midimode==3){
+    if(this.audio)
+    { 
+      this.audio.play();
+    }
+  } 
+
 }catch(err)
 {
   console.log(err);
@@ -12914,13 +12969,16 @@ Native["com/sun/mmedia/DirectMIDI.nSetLoopCount.(II)V"] = function(addr,handle,c
   {
     player.tinysynth.setLoop(count);
   }
+  else if(midimode==3)
+  {
+    player.audio.loop=count;
+  }
   if(count==-1)
   {
     if(player.pAudio)
     {  
       player.pAudio.setLoop(true);
-    } 
-
+    }  
   } 
 };
 
