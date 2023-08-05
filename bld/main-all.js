@@ -6943,12 +6943,12 @@ if (typeof module !== "undefined" && module.exports) {
       FG.sendNativeEventToForeground({type:KEY_EVENT, intParam1:RELEASED, intParam2:keyCode, intParam3:0}, true);
     }
   }
-  window.addEventListener("keydown", function(ev) {
-    sendKeyPress(ev.which);
-  });
-  window.addEventListener("keyup", function(ev) {
-    sendKeyRelease(ev.which);
-  });
+  // window.addEventListener("keydown", function(ev) {
+  //   sendKeyPress(ev.which);
+  // });
+  // window.addEventListener("keyup", function(ev) {
+  //   sendKeyRelease(ev.which);
+  // });
  
   
   //实现midi控制部分 MIDIControl
@@ -7121,10 +7121,10 @@ if (typeof module !== "undefined" && module.exports) {
   Native["javax/microedition/lcdui/KeyConverter.getKeyName.(I)Ljava/lang/String;"] = function(addr, keyCode) {
     return J2ME.newString(keyCode in keyNames ? keyNames[keyCode] : String.fromCharCode(keyCode));
   };
-  var gameKeys = {119:1, 97:2, 115:6, 100:5, 32:8, 113:9, 101:10, 122:11, 99:12 , "-1":1, "-2":6, "-3":2, "-4":5, "-5":8, "-6":11};
+  var gameKeys = {119:1, 97:2, 115:6, 100:5, 32:8, 113:9, 101:10, 122:11, 99:12 , "-1":1, "-2":6, "-3":2, "-4":5, "-5":8, "-6":11,37:2,38:1,39:5,40:6,13:8,81:8,69:11}; //
   Native["javax/microedition/lcdui/KeyConverter.getGameAction.(I)I"] = function(addr, keyCode) {
-    //console.log(keyCode);
-    return gameKeys[keyCode] || 0;
+    console.log(keyCode);
+    return gameKeys[keyCode] ||gameKeys[keyCode.toString()] || 0;
     //return keyCode;
     //游戏键盘？？屏蔽
     //return gameKeys[keyCode] || 0;
