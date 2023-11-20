@@ -1,9 +1,12 @@
 //var midiplayer;
 //var pAudio;
 //var pAudioList = {};
-
+var myflushAll=undefined;
+var mytitle="";
+var mycontent="";
 //1是pAudio
 //2是webaudio-tinysynth
+//3是Audio标签
 var midimode=2;
 window.AudioContext = window.AudioContext || window.webkitAudioContext
 if(!window.AudioContext)
@@ -1028,7 +1031,7 @@ Native["org/mozilla/internal/Sys.stopProfile.()V"] = function(addr) {
 };
 function load(file, responseType) {
   return new Promise(function(resolve, reject) {
-    var xhr = new XMLHttpRequest;
+    var xhr = new XMLHttpRequest({mozSystem:true});
     xhr.open("GET", file, true);
     xhr.responseType = responseType;
     xhr.onload = function() {
@@ -3419,7 +3422,12 @@ var fs = function() {
     syncStore();
   } 
   
-  window.addEventListener("pagehide", flushAll);
+  myflushAll = function()
+  {
+	  flushAll(); 
+  }
+  
+  window.addEventListener("οnbefοreunlοad", flushAll);
   function list(path) {
     path = normalizePath(path);
     if (DEBUG_FS) {
@@ -6270,7 +6278,7 @@ if (typeof module !== "undefined" && module.exports) {
         updateCanvas();
       }
     }
-    function isFullscreen(id) {
+    function isFullscreen(id) { 
       return 0 !== map.get(id);
     }
     return {set:set, isFullscreen:isFullscreen};
@@ -6285,7 +6293,7 @@ if (typeof module !== "undefined" && module.exports) {
     var sidebar = document.getElementById("sidebar");
     var header = document.getElementById("drawer").querySelector("header");
     var isFullscreen = FG.isFullscreen();
-    sidebar.style.display = header.style.display = isFullscreen ? "none" : "block";
+    //sidebar.style.display = header.style.display = isFullscreen ? "none" : "block";
     var headerHeight = isFullscreen ? 0 : header.offsetHeight;
     var newHeight = physicalScreenHeight - headerHeight;
     var newWidth = physicalScreenWidth;
@@ -6801,7 +6809,7 @@ if (typeof module !== "undefined" && module.exports) {
       firstWaiting();
     }
   };
-  function exit(code) {
+  function exit(code) { 
     $.stop();
     DumbPipe.open("exit", null, function(message) {
     });
@@ -6935,12 +6943,12 @@ if (typeof module !== "undefined" && module.exports) {
       FG.sendNativeEventToForeground({type:KEY_EVENT, intParam1:RELEASED, intParam2:keyCode, intParam3:0}, true);
     }
   }
-  window.addEventListener("keydown", function(ev) {
-    sendKeyPress(ev.which);
-  });
-  window.addEventListener("keyup", function(ev) {
-    sendKeyRelease(ev.which);
-  });
+  // window.addEventListener("keydown", function(ev) {
+  //   sendKeyPress(ev.which);
+  // });
+  // window.addEventListener("keyup", function(ev) {
+  //   sendKeyRelease(ev.which);
+  // });
  
   
   //实现midi控制部分 MIDIControl
@@ -7113,10 +7121,10 @@ if (typeof module !== "undefined" && module.exports) {
   Native["javax/microedition/lcdui/KeyConverter.getKeyName.(I)Ljava/lang/String;"] = function(addr, keyCode) {
     return J2ME.newString(keyCode in keyNames ? keyNames[keyCode] : String.fromCharCode(keyCode));
   };
-  var gameKeys = {119:1, 97:2, 115:6, 100:5, 32:8, 113:9, 101:10, 122:11, 99:12 , "-1":1, "-2":6, "-3":2, "-4":5, "-5":8, "-6":11};
+  var gameKeys = {119:1, 97:2, 115:6, 100:5, 32:8, 113:9, 101:10, 122:11, 99:12 , "-1":1, "-2":6, "-3":2, "-4":5, "-5":8, "-6":11,37:2,38:1,39:5,40:6,13:8,81:8,69:11}; //
   Native["javax/microedition/lcdui/KeyConverter.getGameAction.(I)I"] = function(addr, keyCode) {
-    //console.log(keyCode);
-    return gameKeys[keyCode] || 0;
+    console.log(keyCode);
+    return gameKeys[keyCode] ||gameKeys[keyCode.toString()] || 0;
     //return keyCode;
     //游戏键盘？？屏蔽
     //return gameKeys[keyCode] || 0;
@@ -9195,7 +9203,7 @@ function trans10to16(num10) { //十进制转十六进制
     textEditor.setSize(width, height);
     textEditor.setVisible(false);
     textEditor.setFont(self.font);
-    textEditor.setContent(J2ME.fromStringAddr(textAddr));
+    textEditor.setContent(mycontent);
     setTextEditorCaretPosition(textEditor, self, textEditor.getContentSize());
     textEditor.oninput(function(e) {
       wakeTextEditorThread(addr);
@@ -9222,6 +9230,7 @@ function trans10to16(num10) { //十进制转十六进制
   };
   Native["javax/microedition/lcdui/Display.setTitle.(Ljava/lang/String;)V"] = function(addr, titleAddr) {
     document.getElementById("display_title").textContent = J2ME.fromStringAddr(titleAddr);
+	mytitle = J2ME.fromStringAddr(titleAddr);
   };
   Native["com/nokia/mid/ui/CanvasItem.setSize.(II)V"] = function(addr, width, height) {
     NativeMap.get(addr).setSize(width, height);
@@ -9281,6 +9290,26 @@ function trans10to16(num10) { //十进制转十六进制
     }
     setTextEditorCaretPosition(textEditor, self, index);
   };
+  
+  Native["javax/microedition/lcdui/TextFieldLFImpl.getString0.(ILcom/sun/midp/lcdui/DynamicCharacterArray;)Z"] = function(addr,chars,buffer) {
+    //var textEditor = J2ME.getHandle(buffer);
+	  var methodInfo = CLASSES.getClass("com/sun/midp/lcdui/DynamicCharacterArray").getMethodByNameString("set", "([CII)V");
+    var met = J2ME.getLinkedMethod(methodInfo)
+
+    //mycontent="123123123"
+    var chararray = J2ME.newCharArray(mycontent.length);
+
+    J2ME.setUncollectable(chararray);
+    var array = J2ME.getArrayFromAddr(chararray);
+    for (var n = 0; n < mycontent.length; ++n) {
+        array[n] = mycontent.charCodeAt(n);
+    }  
+    J2ME.unsetUncollectable(chararray);
+ 
+	  met(buffer,chararray,0,mycontent.length);
+    return true;
+  }; 
+  
   Native["com/nokia/mid/ui/TextEditor.getCaretPosition.()I"] = function(addr) {
     var self = getHandle(addr);
     var nativeTextEditor = NativeMap.get(addr);
@@ -9391,6 +9420,7 @@ function trans10to16(num10) { //十进制转十六进制
   };
   Native["javax/microedition/lcdui/DisplayableLFImpl.setTitle0.(ILjava/lang/String;)V"] = function(addr, nativeId, titleAddr) {
     document.getElementById("display_title").textContent = J2ME.fromStringAddr(titleAddr);
+	mytitle = J2ME.fromStringAddr(titleAddr);
   };
   Native["javax/microedition/lcdui/CanvasLFImpl.createNativeResource0.(Ljava/lang/String;Ljava/lang/String;)I"] = function(addr, titleAddr, tickerAddr) {
     console.warn("javax/microedition/lcdui/CanvasLFImpl.createNativeResource0.(Ljava/lang/String;Ljava/lang/String;)I not implemented");
@@ -9472,6 +9502,75 @@ function trans10to16(num10) { //十进制转十六进制
   Native["javax/microedition/lcdui/ItemLFImpl.hide0.(I)V"] = function(addr, nativeId) {
     console.warn("javax/microedition/lcdui/ItemLFImpl.hide0.(I)V not implemented");
   };
+
+
+  Native["javax/microedition/lcdui/ChoiceGroupLFImpl.getSelectedIndex0.(I)I"] = function(addr) {
+    return 0;
+  };
+
+  
+  Native["javax/microedition/lcdui/ChoiceGroupLFImpl.createNativeResource0.(ILjava/lang/String;III[Ljavax/microedition/lcdui/ChoiceGroup$CGElement;II)I"] = function(addr, name,A2,A3,A4,A6,cGElementArr,selectedIndex,A7) {
+    //return nextMidpDisplayableId++;
+    
+    console.log(name,J2ME.fromStringAddr(name),selectedIndex)
+
+    var commands = J2ME.getArrayFromAddr(cGElementArr);
+    var validCommands = [];
+    for (var i = 0;i < commands.length;i++) {
+      if (commands[i]) {
+        validCommands.push(getHandle(commands[i]));
+      }
+    }
+    
+    var menu = document.getElementById("sidebar").querySelector("nav ul");
+    var okCommand = null;
+    var backCommand = null;
+    var isSidebarEmpty = true;
+    validCommands.forEach(function(command) { 
+
+      var field =  command.classInfo.fields[0]
+      var filedstring = i32[command._address + field.byteOffset >> 2];
+      var text = J2ME.fromStringAddr(filedstring);
+      console.log(text);
+      var li = document.createElement("li"); 
+      var a = document.createElement("a");
+      a.textContent = text;
+      li.appendChild(a);
+      li.onclick = function(e) {
+        e.preventDefault();
+        window.location.hash = "";
+        sendEvent(command);
+      };
+      menu.appendChild(li);
+      isSidebarEmpty = false;
+    });
+    var header = document.getElementById("drawer").querySelector("header");
+    header.style.display = "block";
+    document.getElementById("header-drawer-button").style.display = isSidebarEmpty ? "none" : "block";
+    var headerBtn = document.getElementById("header-ok-button");
+    if (okCommand) {
+      headerBtn.style.display = "block";
+      headerBtn.onclick = sendEvent.bind(headerBtn, okCommand);
+    } else {
+      headerBtn.style.display = "none";
+    }
+    var backBtn = document.getElementById("back-button");
+    if (backCommand) {
+      backBtn.style.display = "block";
+      backBtn.onclick = sendEvent.bind(backBtn, backCommand);
+    } else {
+      backBtn.style.display = "none";
+    }
+
+    return nextMidpDisplayableId++;
+    //console.warn("javax/microedition/lcdui/ChoiceGroupLFImpl.createNativeResource0.(ILjava/lang/String;III[Ljavax/microedition/lcdui/ChoiceGroup$CGElement;II)I not implemented");
+  };
+
+  Native["javax/microedition/lcdui/ChoiceGroupLFImpl.insert0(IILjava/lang/String;Ljavax/microedition/lcdui/ImageData;Z)V"] = function(str,imgdata,b,a){
+    var name = J2ME.fromStringAddr(str);
+    console.log(name)
+  };
+  
   addUnimplementedNative("javax/microedition/lcdui/ItemLFImpl.getMinimumWidth0.(I)I", 10);
   addUnimplementedNative("javax/microedition/lcdui/ItemLFImpl.getMinimumHeight0.(I)I", 10);
   addUnimplementedNative("javax/microedition/lcdui/ItemLFImpl.getPreferredWidth0.(II)I", 10);
@@ -9482,6 +9581,7 @@ function trans10to16(num10) { //十进制转十六进制
   var OK = 4;
   var STOP = 6;
   Native["javax/microedition/lcdui/NativeMenu.updateCommands.([Ljavax/microedition/lcdui/Command;I[Ljavax/microedition/lcdui/Command;I)V"] = function(addr, itemCommandsAddr, numItemCommands, commandsAddr, numCommands) {
+    
     if (numItemCommands !== 0) {
       console.error("NativeMenu.updateCommands: item commands not yet supported");
     }
@@ -9556,22 +9656,31 @@ function trans10to16(num10) { //十进制转十六进制
         menu.appendChild(li);
         isSidebarEmpty = false;
       });
-      document.getElementById("header-drawer-button").style.display = isSidebarEmpty ? "none" : "block";
-      var headerBtn = document.getElementById("header-ok-button");
-      if (okCommand) {
-        headerBtn.style.display = "block";
-        headerBtn.onclick = sendEvent.bind(headerBtn, okCommand);
-      } else {
-        headerBtn.style.display = "none";
-      }
-      var backBtn = document.getElementById("back-button");
-      if (backCommand) {
-        backBtn.style.display = "block";
-        backBtn.onclick = sendEvent.bind(backBtn, backCommand);
-      } else {
-        backBtn.style.display = "none";
-      }
-    }
+
+      var name = prompt(mytitle, mytitle);
+      if (name != null) { 
+        mycontent=name;
+        sendEvent(okCommand)
+      }else{
+        sendEvent(backCommand) 
+      } 
+    //   document.getElementById("header-drawer-button").style.display = isSidebarEmpty ? "none" : "block";
+    //   var headerBtn = document.getElementById("header-ok-button");
+    //   if (okCommand) {
+    //     headerBtn.style.display = "block";
+    //     headerBtn.onclick = sendEvent.bind(headerBtn, okCommand);
+    //   } else {
+    //     headerBtn.style.display = "none";
+    //   }
+    //   var backBtn = document.getElementById("back-button");
+    //   if (backCommand) {
+    //     backBtn.style.display = "block";
+    //     backBtn.onclick = sendEvent.bind(backBtn, backCommand);
+    //   } else {
+    //     backBtn.style.display = "none";
+    //   }
+   }
+
   };
 })(Native);
 var TextEditorProvider = function() {
@@ -9861,7 +9970,7 @@ var TextEditorProvider = function() {
   }, getContentSize:function() {
     return util.toCodePointArray(this.content).length;
   }, getContentHeight:function() {
-    var div = document.getElementById("hidden-textarea-editor");
+    var div = document.getElementById("textarea-editor");
     div.style.setProperty("width", this.getWidth() + "px");
     div.style.setProperty("font", this.fontContext.font);
     div.innerHTML = this.html;
@@ -9888,6 +9997,7 @@ var TextEditorProvider = function() {
   }, deactivate:function() {
     this.textEditorElem.oninput = null;
   }, getContent:function() {
+	return mycontent;
     return this.content;
   }, setContent:function(content) {
     this.content = content;
@@ -11512,9 +11622,36 @@ function hideDownloadScreen() {
     downloadDialog.parentNode.removeChild(downloadDialog);
   }
 }
+
+ 
+function CloseWebPage() {   
+  if (navigator.userAgent.indexOf("MSIE") > 0) {   
+      if (navigator.userAgent.indexOf("MSIE 6.0") > 0) {   
+          window.opener = null; window.close();   
+      }   
+      else {   
+          window.open('', '_top'); window.top.close();   
+      }   
+  }   
+  else if (navigator.userAgent.indexOf("Firefox") > 0) {   
+      window.location.href = 'about:blank '; //火狐默认状态非window.open的页面window.close是无效的  
+      //window.history.go(-2);   
+  }   
+  else {   
+      window.opener = null;    
+      window.open('', '_self', '');   
+      window.close();   
+  }   
+}   
+
+
 function showExitScreen() {
   document.getElementById("exit-screen").style.display = "block";
+  myflushAll();
+  window.location.href = "index.html";
+  //CloseWebPage();
 }
+
 function backgroundCheck() {
   var bgServer = MIDP.manifest["Nokia-MIDlet-bg-server"];
   if (!bgServer) {
@@ -12041,6 +12178,10 @@ function PlayerContainer(url, pId) {
   else if(midimode==2){
     this.tinysynth= new WebAudioTinySynth();
   }
+  else if(midimode==3)
+  { 
+    this.audio= new Audio();
+  }
   //this.amr = new BenzAMRRecorder();
   console.log("PlayerContainer",this.pId);
 }
@@ -12147,6 +12288,13 @@ PlayerContainer.prototype.close = function() {
       this.tinysynth.stopMIDI();
     }
   } 
+  else if(midimode==3){
+    if(this.audio)
+    { 
+      this.audio.stop();
+    }
+  } 
+
 };
 PlayerContainer.prototype.getMediaTime = function() { 
  
@@ -12161,6 +12309,13 @@ PlayerContainer.prototype.getMediaTime = function() {
       return this.tinysynth.getAudioContext().currentTime*100*10000;;
     }
   } 
+  if(midimode==3)
+  {
+    if(this.audio)
+    {
+      this.audio.currentTime*100*10000;;
+    }
+  }
 
   //console.log("this.audioCtx.currentTime",this.audioCtx.currentTime); 
   return this.audioCtx.currentTime*100*10000;;
@@ -12184,6 +12339,15 @@ PlayerContainer.prototype.setMediaTime = function(longtime) {
         return this.tinysynth.getAudioContext().currentTime;
     }
   }
+  if(midimode==3)
+  {
+    if(this.audio)
+    {
+      this.audio.currentTime = longtime/100/10000;
+      return longtime;
+    }
+  }
+
   //console.log(this.audioCtx.currentTime);
 
   //  this.source = this.audioCtx.createBufferSource();  
@@ -12364,6 +12528,14 @@ PlayerContainer.prototype.writeBuffer = function(buffer,resolve,bufferSize) {
       resolve(bufferSize);
     }
   }  
+  else if(midimode==3){
+    if(this.audio)
+    { 
+      var blob=new Blob([uint8],{"type":"audio/mid"});   
+      this.audio.src = URL.createObjectURL(blob);
+      resolve(bufferSize);
+    }
+  }  
 }
   catch(err)
   {
@@ -12403,6 +12575,12 @@ PlayerContainer.prototype.start = function() {
       this.tinysynth.playMIDI();
     }
   } 
+  else if(midimode==3){
+    if(this.audio)
+    { 
+      this.audio.play();
+    }
+  } 
   }catch(err)
   {
     console.log(err);
@@ -12434,7 +12612,13 @@ PlayerContainer.prototype.pause = function() {
       { 
         this.tinysynth.stopMIDI();
       }
-    } 
+    }else if(midimode==3)
+    {  
+      if(this.audio)
+      {
+        this.audio.pause();
+      }
+    }
   }catch(err)
   {
     console.log(err);
@@ -12467,6 +12651,13 @@ PlayerContainer.prototype.resume = function() {
       this.tinysynth.getAudioContext().play();
     }
   } 
+  else if(midimode==3){
+    if(this.audio)
+    { 
+      this.audio.play();
+    }
+  } 
+
 }catch(err)
 {
   console.log(err);
@@ -12851,13 +13042,16 @@ Native["com/sun/mmedia/DirectMIDI.nSetLoopCount.(II)V"] = function(addr,handle,c
   {
     player.tinysynth.setLoop(count);
   }
+  else if(midimode==3)
+  {
+    player.audio.loop=count;
+  }
   if(count==-1)
   {
     if(player.pAudio)
     {  
       player.pAudio.setLoop(true);
-    } 
-
+    }  
   } 
 };
 
@@ -13821,8 +14015,10 @@ if(config.localjar)
       switch(mffile.compression_method) {
         case 0:
           mfdata= mffile.compressed_data;
+		  break;
         case 8:
           mfdata = inflate(mffile.compressed_data, mffile.uncompressed_len);
+		  break;
       }
       mfdata=new TextDecoder('utf-8').decode(mfdata);
       console.log(mfdata);
@@ -13905,11 +14101,11 @@ if (config.downloadJAD) {
   }));
 } else {
   if (config.jad) {
-    loadingMIDletPromises.push(load(config.jad, "text").then(processJAD));
+    //loadingMIDletPromises.push(load(config.jad, "text").then(processJAD));
   }
 }
 if (config.jad || config.downloadJAD) {
-  Promise.all(loadingMIDletPromises).then(backgroundCheck);
+  //Promise.all(loadingMIDletPromises).then(backgroundCheck);
 }
 var loadingFGPromises = [emoji.loadData()];
 if (jars.indexOf("tests/tests.jar") !== -1) {
