@@ -14,3 +14,8 @@ The following conditions now apply:
 3. **No Picking:** No parts, pieces, or components of the software may be extracted and submitted to other projects. This includes, but is not limited to, code snippets, functions, and released binaries.
 
 4. **No Claim to Succession:** Any fork of the software that was created before the license change may not claim to be an official or unofficial successor to the project. This includes but is not limited to using the project's name, branding, or reputation to imply a connection to the original project.
+
+If you accept the agreement, here are two versions of this software:
+
+- [KaiOS version](https://rosabis.github.io/J2meJS/kaios/)
+- [Normal version](https://rosabis.github.io/J2meJS/java/)
