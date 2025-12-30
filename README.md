@@ -1,5 +1,3 @@
-# I found that someone changed the name of my software to J2meEmul and uploaded it to the kaios store without my consent, so this software will stop updating permanently until it is removed from the kaios store.
-
 
 ## Copyright Notice
 
