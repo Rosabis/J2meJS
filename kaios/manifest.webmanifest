@@ -1,0 +1,75 @@
+{
+  "lang": "zh-CN",
+  "name": "j2me",
+  "short_name": "j2me",
+  "id": "/J2meJS/kaios/",
+  "scope": "/J2meJS/kaios/",
+  "start_url": "/J2meJS/kaios/index.html",
+  "version": "2024-04-28",
+  "categories": ["Utilities"],
+  "description": "An J2me emulator for KaiOS 3.X",
+  "icons": [
+    {
+      "src": "https://rosabis.github.io/J2meJS/kaios/img/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "https://rosabis.github.io/J2meJS/kaios/img/icon-128.png",
+      "type": "image/png",
+      "sizes": "128x128"
+    }
+  ],
+  "theme_color": "#496c6b",
+  "orientation": "portrait",
+  "display": "fullscreen",
+  "origin": "rosabis.github.io",
+  "developer": {
+    "name": "Zixing",
+    "url": "https://rosabis.github.io"
+  },
+  "b2g_features": {
+    "core": true,
+    "subtitle": "An J2me emulator for KaiOS 3.X",
+    "version": "2024-04-28",
+    "permissions": {
+      "audio-channel-content": {
+        "description": "To play the instrument."
+      },
+      "desktop-notification": {
+        "description": "New content update notification for the user."
+      },
+      "geolocation": {
+        "description": "Marking out user location."
+      },
+      "mobiledata": {
+        "description": "Required for mobile data access."
+      },
+      "push": {
+        "description": "New update push."
+      },
+      "serviceworker": {
+        "description": "Required for handling push."
+      },
+      "systemXHR": {
+        "description": "Required to load messages."
+      },
+      "volumemanager": {
+        "description": "Required for managing audio volume."
+      },
+      "wifidata": {
+        "description": "Required for Wi-Fi data access."
+      }
+    },
+    "messages": [
+      { "alarm": "/J2meJS/kaios/index.html" }
+    ],
+    "chrome": {
+      "navigation": false
+    },
+    "cursor": false,
+    "fullscreen": true,
+    "ime_default_softkey_bar": true,
+    "focus_color": "#6054EF"
+  }
+}
