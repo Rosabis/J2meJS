@@ -3,7 +3,7 @@
   "description": "a J2ME-compatible virtual machine written in JavaScript",
   "launch_path": "/index.html",
   "origin": "app://pluotsorbet.mozilla.org",
-  "version": "2024-04-28",
+  "version": "1659142869",
   "icons": {
     "128": "/img/icon-128.png",
     "512": "/img/icon-512.png"
