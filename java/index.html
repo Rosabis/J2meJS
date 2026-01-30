@@ -412,11 +412,36 @@
 						picPath: "img/zskc.png"
 					},
 					{
-						name: " 不可思议的机器",
+						name: "不可思议的机器",
 						jarName: "machine.jar",
 						picPath: "img/machine.png"
+					} 
+					,
+					{
+						name: "刺客信条兄弟会触屏版",
+						jarName: "acb.jar",
+						picPath: "img/acb.png"
+					},
+					{
+						name: "刺客信条大屏触屏版",
+						jarName: "asbr.jar",
+						picPath: "img/asbr.png"
+					},
+					{
+						name: "刺客信条3大屏触屏版",
+						jarName: "ckxt3big.jar",
+						picPath: "img/ckxt3big.png"
+					},
+					{
+						name: "文明V键盘版",
+						jarName: "c5small.jar",
+						picPath: "img/c5small.png"
+					},
+					{
+						name: "文明V触屏大屏版",
+						jarName: "c5big.jar",
+						picPath: "img/c5big.png"
 					}
-					
 				]
 				// 初始化游戏列表
 				var GameListHtml = '';
@@ -438,7 +463,7 @@
 
 				function refreshGameList() {
 					JARStore.getAll().then(
-						(files) => {
+						function(files){
 							var localjars = document.getElementById('localjars');
 							localjars.length = 0;
 							for (var i = 0; i < files.length; i++) {
@@ -454,7 +479,7 @@
 							}
 							localjars.selectedIndex = gameindex;
 						},
-						(err) => {
+						function(err){
 							alert(err);
 						}
 					);
@@ -494,12 +519,12 @@
 					let res = confirm('确定删除 ' + jarname + ' ？');
 					if (res) {
 						JARStore.deleteJar(jarname).then(
-							() => {
+							function() {
 								alert(jarname + "删除成功！");
 								refreshGameList();
 
 							},
-							(errname) => {
+							function(errname) {
 								alert(errname + "删除失败！");
 							}
 						);
@@ -520,11 +545,11 @@
 					reader.readAsArrayBuffer(_file);
 					reader.onload = function(readRes) {
 						JARStore.installJAR(_file.name, readRes.target.result).then(
-							() => {
+							function()  {
 								alert(_file.name + "安装成功！");
 								refreshGameList();
 							},
-							(errname) => {
+							function(errname) {
 								alert(errname + "安装失败！");
 							}
 						);
@@ -547,24 +572,22 @@
 							myInfo[key] = data[key];
 						}
 					}
-					return {
-						//按key从对象中取值
-						getValueByKey(key) {
+					
+					return { 
+						getValueByKey:function(key) {
 							return myInfo[key]
-						},
-						//将键值对保存到对象中
-						setValueByKey() {
+						}, 
+						setValueByKey:function() {
 							for (var i = 0; i < arguments.length; i += 2) {
 								myInfo[arguments[i]] = arguments[i + 1];
-							}
-							//将新的数据序列化到本地保存
+							} 
 							window.localStorage["my"] = JSON.stringify(myInfo);
 						}
 					}
 				}
 
 				var config01 = new config();
-				window.addEventListener("load", () => {
+				window.addEventListener("load", function() {
 
 					var csize = config01.getValueByKey("canvasSize");
 					var gsize = config01.getValueByKey("gamepadSize");
@@ -647,8 +670,12 @@
 			<select id="canvasSize" class="filter-box">
 				<option value="size-240x320">显示尺寸: 240x320</option>
 				<option value="size-320x240">显示尺寸: 320x240</option>
+				<option value="size-240x400">显示尺寸: 240x400</option>
+				<option value="size-400x240">显示尺寸: 400x240</option>
 				<option value="size-360x640">显示尺寸: 360x640</option>
 				<option value="size-640x360">显示尺寸: 640x360</option>
+				<option value="size-400x800">显示尺寸: 400x800</option>
+				<option value="size-800x400">显示尺寸: 800x400</option>
 				<option value="size-no" selected>显示尺寸: 无限制</option>
 			</select>
 			<select id="gamepadSize" class="filter-box">
