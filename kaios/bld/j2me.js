@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2014 Mozilla Foundation
  *
@@ -13,11 +12,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ */ 
 /** @const */ var release = true;
 /** @const */ var profile = 0;
 /** @const */ var profileFormat = "PLAIN";
-/** @const */ var asmJsTotalMemory = 64 * 1024 * 1024;
+/** @const */ var asmJsTotalMemory = 8192 * 1024 * 1024;
 /*
  * Copyright 2014 Mozilla Foundation
  *
@@ -323,9 +322,9 @@ var J2ME;
             while (l >= 4) {
                 k =
                     (data[i]) |
-                    (data[++i] << 8) |
-                    (data[++i] << 16) |
-                    (data[++i] << 24);
+                        (data[++i] << 8) |
+                        (data[++i] << 16) |
+                        (data[++i] << 24);
                 k = (((k & 0xffff) * 0x5bd1e995) + ((((k >>> 16) * 0x5bd1e995) & 0xffff) << 16));
                 k ^= k >>> 24;
                 k = (((k & 0xffff) * 0x5bd1e995) + ((((k >>> 16) * 0x5bd1e995) & 0xffff) << 16));
@@ -432,7 +431,7 @@ var J2ME;
             this._padding = "";
             this._suppressOutput = suppressOutput;
             this._out = console.log;
-            this._outNoNewline = console.log;
+            this._outNoNewline =  console.log;
         }
         IndentingWriter.prototype.write = function (str, writePadding) {
             if (str === void 0) { str = ""; }
@@ -832,12 +831,10 @@ var J2ME;
 (function () {
     function extendBuiltin(prototype, property, value) {
         if (!prototype[property]) {
-            Object.defineProperty(prototype, property, {
-                value: value,
+            Object.defineProperty(prototype, property, { value: value,
                 writable: true,
                 configurable: true,
-                enumerable: false
-            });
+                enumerable: false });
         }
     }
     function removeColors(s) {
@@ -3167,10 +3164,6 @@ var J2ME;
         });
         Object.defineProperty(FrameView.prototype, "parameterOffset", {
             get: function () {
-                // if(this.methodInfo && !this.methodInfo.codeAttribute)
-                // {
-                //     return 0;
-                // }
                 return this.methodInfo ? -this.methodInfo.codeAttribute.max_locals : 0;
             },
             enumerable: true,
@@ -3339,10 +3332,7 @@ var J2ME;
             return J2ME.methodIdToMethodInfoMap[i32[this.fp + 2 /* CalleeMethodInfoOffset */] & 268435455 /* CalleeMethodInfoMask */];
         };
         Thread.prototype.run = function () {
-            if ($ && $.ctx) {
-                //console.log('$.ctx.id',$.ctx.id);
-                release || J2ME.traceWriter && J2ME.traceWriter.writeLn("Thread.run " + $.ctx.id);
-            }
+            release || J2ME.traceWriter && J2ME.traceWriter.writeLn("Thread.run " + $.ctx.id);
             return interpret(this);
         };
         Thread.prototype.exceptionUnwind = function (e) {
@@ -3354,7 +3344,6 @@ var J2ME;
                 switch (frameType) {
                     case FrameType.Interpreter:
                         var mi = J2ME.methodIdToMethodInfoMap[i32[this.fp + 2 /* CalleeMethodInfoOffset */] & 268435455 /* CalleeMethodInfoMask */];
-
                         release || J2ME.traceWriter && J2ME.traceWriter.writeLn("Looking for handler in: " + mi.implKey);
                         for (var i = 0; i < mi.exception_table_length; i++) {
                             var exceptionEntryView = mi.getExceptionEntryViewByIndex(i);
@@ -3413,22 +3402,16 @@ var J2ME;
         Thread.prototype.throwException = function (fp, sp, pc, type, a) {
             this.set(fp, sp, pc);
             switch (type) {
-                //这里拦截了报错
                 case 1 /* ArrayIndexOutOfBoundsException */:
-                    console.log('throwArrayIndexOutOfBoundsException' + a)
                     //J2ME.throwArrayIndexOutOfBoundsException(a);
                     break;
                 case 0 /* ArithmeticException */:
-                    console.log('ArithmeticException')
-                    //J2ME.throwArithmeticException();
+                    J2ME.throwArithmeticException();
                     break;
                 case 2 /* NegativeArraySizeException */:
-
-                    console.log('throwNegativeArraySizeException')
-                    //J2ME.throwNegativeArraySizeException();
+                    J2ME.throwNegativeArraySizeException();
                     break;
                 case 3 /* NullPointerException */:
-                    //console.log('throwNullPointerException')
                     //J2ME.throwNullPointerException();
                     break;
             }
@@ -3560,22 +3543,8 @@ var J2ME;
     })();
     J2ME.Thread = Thread;
     function prepareInterpretedMethod(methodInfo) {
-
-        //console.log("methodInfo",methodInfo)
-        // if(ReplaceMethod)
-        // {
-        //     //这里实现替换java中的方法
-        //     var methodjs=ReplaceMethod[methodInfo.implKey];
-        //     if(methodjs)
-        //     {
-        //         console.log(methodInfo.implKey,"replaced!");
-        //         methodInfo.fn = methodjs;
-        //         methodInfo.state=1;
-        //     }   
-        // }
-
         var method = function fastInterpreterFrameAdapter() {
-            J2ME.runtimeCounter && J2ME.runtimeCounter.count("fastInterpreterFrameAdapter");
+            J2ME.runtimeCounter && J2ME.runtimeCounter.count("fastInterpreterFrameAdapter"); 
             var calleeStats = methodInfo.stats;
             calleeStats.interpreterCallCount++;
             if (config.forceRuntimeCompilation ||
@@ -3619,15 +3588,7 @@ var J2ME;
                     return;
                 }
             }
-            var v = 0;
-            try {
-                v = interpret(thread);
-                //console.log('interpret '+v)
-            }
-            catch (err) {
-                console.log('interpret error:', err);
-                return v;
-            }
+            var v = interpret(thread);
             if (U) {
                 // Splice out the marker frame so the interpreter doesn't return early when execution is resumed.
                 // The simple solution of using the calleeFP to splice the frame cannot be used since the frame
@@ -3693,9 +3654,10 @@ var J2ME;
         }
         release || assert(frame.type === FrameType.Interpreter, "Must begin with interpreter frame.");
         var mi = frame.methodInfo;
-    
-    
-    
+        if(!mi)
+        {
+            console.log(frame);
+        } 
         release || assert(mi, "Must have method info.");
         mi.stats.interpreterCallCount++;
         if (config.forceRuntimeCompilation || (mi.state === 0 /* Cold */ &&
@@ -5067,9 +5029,7 @@ var J2ME;
                                 calleeTargetMethodInfo = calleeMethodInfo;
                                 break;
                             case 182 /* INVOKEVIRTUAL */:
-    
                                 calleeTargetMethodInfo = classInfo.vTable[calleeMethodInfo.vTableIndex];
-    
                                 break;
                             case 185 /* INVOKEINTERFACE */:
                                 calleeTargetMethodInfo = classInfo.iTable[calleeMethodInfo.mangledName];
@@ -5078,9 +5038,6 @@ var J2ME;
                                 release || J2ME.traceWriter && J2ME.traceWriter.writeLn("Not Implemented: " + J2ME.Bytecode.getBytecodesName(op));
                                 assert(false, "Not Implemented: " + J2ME.Bytecode.getBytecodesName(op));
                         }
-    
-    
-    
                         // Call Native or Compiled Method.
                         var callMethod = calleeTargetMethodInfo.isNative || calleeTargetMethodInfo.state === 1 /* Compiled */;
                         var calleeStats = calleeTargetMethodInfo.stats;
@@ -5206,7 +5163,6 @@ var J2ME;
                             $.ctx.monitorEnter(J2ME.getMonitor(monitorAddr));
                             release || assert(U !== 1 /* Yielding */, "Monitors should never yield.");
                             if (U === 2 /* Pausing */ || U === 3 /* Stopping */) {
-    
                                 thread.set(fp, sp, opPC);
                                 return;
                             }
@@ -5214,7 +5170,6 @@ var J2ME;
                         code = mi.codeAttribute.code;
                         release || J2ME.traceWriter && J2ME.traceWriter.indent();
                         continue;
-    
                     default:
                         release || J2ME.traceWriter && J2ME.traceWriter.writeLn("Not Implemented: " + J2ME.Bytecode.getBytecodesName(op) + ", PC: " + opPC + ", CODE: " + code.length);
                         release || assert(false, "Not Implemented: " + J2ME.Bytecode.getBytecodesName(op));
@@ -5222,58 +5177,35 @@ var J2ME;
                 }
             }
             catch (e) {
-                try {
-                    release || J2ME.traceWriter && J2ME.traceWriter.redLn("XXX I Caught: " + e + ", details: " + toName(e));
-                    release || J2ME.traceWriter && J2ME.traceWriter.writeLn(e.stack);
-    
-                    if (e && e.constructor && e.constructor.prototype && e.constructor.prototype.classInfo && e.constructor.prototype.classInfo._name) {
-                        var detailMessage = ''
-                        if (e.detailMessage) {
-                            detailMessage = J2ME.fromStringAddr(e.detailMessage);
-                        }
-                        console.warn("error occurs at : " + e.constructor.prototype.classInfo._name + " detailMessage: " + detailMessage);
-    
-                        //console.error(e); 
-                    } else {
-                        console.error(e);
-                    }
-    
-                    // release || traceWriter && traceWriter.writeLn(jsGlobal.getBacktrace());
-                    // If an exception is thrown from a native there will be a native marker frame at the top of the stack
-                    // which will be cut off when the the fp is set on the thread below. To keep the nativeFrameCount in
-                    // sync the native marker must be popped.
-    
-                    if (thread.fp > fp && thread.frame.type === FrameType.Native) {
-                        release || assert(i32[thread.fp + 1 /* CallerFPOffset */] === fp, "Only one extra frame is on the stack. " + (thread.fp - fp));
-                        thread.popMarkerFrame(FrameType.Native);
-                    }
-                    thread.set(fp, sp, opPC);
-                    e = J2ME.translateException(e);
-                    if (e && !e.classInfo) {
-                        // A non-java exception was thrown. Rethrow so it is not handled by exceptionUnwind.
-                        throw e;
-                    }
-                    thread.exceptionUnwind(e);
-                    // Load thread state after exception unwind.
-                    fp = thread.fp | 0;
-                    sp = thread.sp | 0;
-                    pc = thread.pc | 0;
-                    mi = thread.frame.methodInfo;
-                    if (mi.codeAttribute) {
-                        maxLocals = mi.codeAttribute.max_locals;
-                    }
-                    lp = fp - maxLocals | 0;
-                    ci = mi.classInfo;
-                    cp = ci.constantPool;
-                    if (mi.codeAttribute) {
-                        code = mi.codeAttribute.code;
-                    } 
-                    continue;
-                } catch (err) {
-                    console.error(err)
-                    continue;
+                release || J2ME.traceWriter && J2ME.traceWriter.redLn("XXX I Caught: " + e + ", details: " + toName(e));
+                release || J2ME.traceWriter && J2ME.traceWriter.writeLn(e.stack);
+                // release || traceWriter && traceWriter.writeLn(jsGlobal.getBacktrace());
+                // If an exception is thrown from a native there will be a native marker frame at the top of the stack
+                // which will be cut off when the the fp is set on the thread below. To keep the nativeFrameCount in
+                // sync the native marker must be popped.
+                if (thread.fp > fp && thread.frame.type === FrameType.Native) {
+                    release || assert(i32[thread.fp + 1 /* CallerFPOffset */] === fp, "Only one extra frame is on the stack. " + (thread.fp - fp));
+                    thread.popMarkerFrame(FrameType.Native);
                 }
-            }  
+                thread.set(fp, sp, opPC);
+                e = J2ME.translateException(e);
+                if (!e.classInfo) {
+                    // A non-java exception was thrown. Rethrow so it is not handled by exceptionUnwind.
+                    throw e;
+                }
+                thread.exceptionUnwind(e);
+                // Load thread state after exception unwind.
+                fp = thread.fp | 0;
+                sp = thread.sp | 0;
+                pc = thread.pc | 0;
+                mi = thread.frame.methodInfo;
+                maxLocals = mi.codeAttribute.max_locals;
+                lp = fp - maxLocals | 0;
+                ci = mi.classInfo;
+                cp = ci.constantPool;
+                code = mi.codeAttribute.code;
+                continue;
+            }
         }
     }
     J2ME.interpret = interpret;
@@ -5313,7 +5245,7 @@ var J2ME;
     /**
      * Turns on caching of JIT-compiled methods.
      */
-
+    J2ME.enableCompiledMethodCache = true && typeof CompiledMethodCache !== "undefined";
     /**
      * Traces method execution.
      */
@@ -5384,10 +5316,10 @@ var J2ME;
     J2ME.baselineMethodCounter = release ? null : new J2ME.Metrics.Counter(true);
     J2ME.asyncCounter = release ? null : new J2ME.Metrics.Counter(true);
     J2ME.unwindCount = 0;
-    // if (typeof Shumway !== "undefined") {
-    //     J2ME.timeline = new Shumway.Tools.Profiler.TimelineBuffer("Runtime");
-    //     J2ME.threadTimeline = new Shumway.Tools.Profiler.TimelineBuffer("Threads");
-    // }
+    if (typeof Shumway !== "undefined") {
+        J2ME.timeline = new Shumway.Tools.Profiler.TimelineBuffer("Runtime");
+        J2ME.threadTimeline = new Shumway.Tools.Profiler.TimelineBuffer("Threads");
+    }
     function enterTimeline(name, data) {
         J2ME.timeline && J2ME.timeline.enter(name, data);
     }
@@ -5592,28 +5524,6 @@ var J2ME;
                 release || J2ME.Debug.assert(!U, "Unexpected unwind during preInitializeClasses.");
                 J2ME.preemptionLockLevel--;
             }
-
-            //这里可以初始一些代码
-            //这里写宽高
-            // var MobileCls=J2ME.CLASSES.getClass('org/recompile/mobile/Mobile');
-            // var MobilePlatformCls = J2ME.CLASSES.getClass('org/recompile/mobile/MobilePlatform');
-            // //console.log("MobileCls,MobilePlatformCls ",MobileCls,MobilePlatformCls)
-            // if(MobileCls && MobilePlatformCls)
-            // {
-            //     //这里执行初始化操作
-            //     // this.classInitCheck(MobileCls);
-            //     // this.classInitCheck(MobilePlatformCls);
-            //     var setPlatformMethod = MobileCls.getMethodByNameString("setPlatform", "(Lorg/recompile/mobile/MobilePlatform;)V");
-
-            //     var MobilePlatformClsInitMethod = MobilePlatformCls.getMethodByNameString("<init>", "(II)V");
-
-            //     var setPlatformMethodFn=J2ME.prepareInterpretedMethod(setPlatformMethod);
-            //     var MobilePlatformClsInitMethodFn=J2ME.prepareInterpretedMethod(MobilePlatformClsInitMethod);
-            //     var MobilePlatformInstance = MobilePlatformClsInitMethodFn(lcdWidth,lcdHeight);
-            //     setPlatformMethodFn(MobilePlatformInstance);
-
-            // }
-
             ctx.clearCurrentContext();
             if (prevCtx) {
                 prevCtx.setAsCurrentContext();
@@ -5629,31 +5539,32 @@ var J2ME;
             this.initialized[classId] = 1;
         };
         RuntimeTemplate.prototype.getClassObjectAddress = function (classInfo) {
-            try {
-                var id = classInfo.id;
-                if (!this.classObjectAddresses[classInfo.id]) {
-                    var addr = allocUncollectableObject(J2ME.CLASSES.java_lang_Class);
-                    var handle = getHandle(addr);
-                    handle.vmClass = id;
-                    // Ensure that maps are large enough.
-                    this.SA = this.staticObjectAddresses = J2ME.ArrayUtilities.ensureInt32ArrayLength(this.staticObjectAddresses, id + 1);
-                    this.CO = this.classObjectAddresses = J2ME.ArrayUtilities.ensureInt32ArrayLength(this.classObjectAddresses, id + 1);
-                    this.classObjectAddresses[id] = addr;
-                    this.staticObjectAddresses[id] = gcMallocUncollectable(8 /* OBJ_HDR_SIZE */ + classInfo.sizeOfStaticFields);
-                    J2ME.linkWriter && J2ME.linkWriter.writeLn("Initializing Class Object For: " + classInfo.getClassNameSlow());
-                    if (classInfo === J2ME.CLASSES.java_lang_Object ||
-                        classInfo === J2ME.CLASSES.java_lang_Class ||
-                        classInfo === J2ME.CLASSES.java_lang_String ||
-                        classInfo === J2ME.CLASSES.java_lang_Thread) {
-                        handle.status = 4;
-                        this.setClassInitialized(id);
-                    }
+            try{
+            var id = classInfo.id;
+            if (!this.classObjectAddresses[classInfo.id]) {
+                var addr = allocUncollectableObject(J2ME.CLASSES.java_lang_Class);
+                var handle = getHandle(addr);
+                handle.vmClass = id;
+                // Ensure that maps are large enough.
+                this.SA = this.staticObjectAddresses = J2ME.ArrayUtilities.ensureInt32ArrayLength(this.staticObjectAddresses, id + 1);
+                this.CO = this.classObjectAddresses = J2ME.ArrayUtilities.ensureInt32ArrayLength(this.classObjectAddresses, id + 1);
+                this.classObjectAddresses[id] = addr;
+                this.staticObjectAddresses[id] = gcMallocUncollectable(8 /* OBJ_HDR_SIZE */ + classInfo.sizeOfStaticFields);
+                J2ME.linkWriter && J2ME.linkWriter.writeLn("Initializing Class Object For: " + classInfo.getClassNameSlow());
+                if (classInfo === J2ME.CLASSES.java_lang_Object ||
+                    classInfo === J2ME.CLASSES.java_lang_Class ||
+                    classInfo === J2ME.CLASSES.java_lang_String ||
+                    classInfo === J2ME.CLASSES.java_lang_Thread) {
+                    handle.status = 4;
+                    this.setClassInitialized(id);
                 }
-                return this.classObjectAddresses[id];
-            } catch (err) {
-                console.log(err);
-                return 0;
             }
+            return this.classObjectAddresses[id];
+        }catch(err)
+        {
+            console.error(err);
+            return 0;
+        }
         };
         /**
          * Generates a new hash code for the specified |object|.
@@ -5736,26 +5647,22 @@ var J2ME;
             return $.ctx.createException("java/lang/StringIndexOutOfBoundsException", str);
         };
         RuntimeTemplate.prototype.newArrayStoreException = function (str) {
-            //console.log("java/lang/ArrayStoreException", str)
             return $.ctx.createException("java/lang/ArrayStoreException", str);
         };
         RuntimeTemplate.prototype.newIllegalMonitorStateException = function (str) {
             return $.ctx.createException("java/lang/IllegalMonitorStateException", str);
         };
         RuntimeTemplate.prototype.newClassCastException = function (str) {
-            //return null;//屏蔽error
-            //console.log("java/lang/ClassCastException "+str);
             return $.ctx.createException("java/lang/ClassCastException", str);
         };
         RuntimeTemplate.prototype.newArithmeticException = function (str) {
             return $.ctx.createException("java/lang/ArithmeticException", str);
         };
         RuntimeTemplate.prototype.newClassNotFoundException = function (str) {
-            //return null;
+            return null;
             return $.ctx.createException("java/lang/ClassNotFoundException", str);
         };
         RuntimeTemplate.prototype.newIllegalArgumentException = function (str) {
-            //console.warn('newIllegalArgumentException',str)
             return $.ctx.createException("java/lang/IllegalArgumentException", str);
         };
         RuntimeTemplate.prototype.newIllegalStateException = function (str) {
@@ -5990,25 +5897,6 @@ var J2ME;
         };
     }
     function findNativeMethodImplementation(methodInfo) {
-        //这里可以进行调试函数信息
-        if (ReplaceMethod) {
-            // if(methodInfo.implKey.indexOf('javax')>-1)
-            // {
-            //     console.log('findNativeMethodImplementation',methodInfo.implKey,methodInfo);
-            // }else{
-            //     console.log('findNativeMethodImplementation',methodInfo.implKey,methodInfo);
-            // }                
-
-            //这里实现替换java中的方法
-            var methodjs = ReplaceMethod[methodInfo.implKey];
-            if (methodjs) {
-                console.log(methodInfo.implKey, "replaced!");
-                methodInfo.fn = methodjs;
-                methodInfo.state = 1;
-                J2ME.linkedMethods[methodInfo.id] = methodjs;
-                return methodjs;
-            }
-        }
         // Look in bindings first.
         var binding = findNativeMethodBinding(methodInfo);
         if (binding) {
@@ -6027,13 +5915,29 @@ var J2ME;
                 };
             }
         }
-
         return null;
     }
     var frameView = new J2ME.FrameView();
     function findCompiledMethod(methodInfo) {
         return;
-
+        // Use aotMetaData to find AOT methods instead of jsGlobal because runtime compiled methods may
+        // be on the jsGlobal.
+        //var mangledClassAndMethodName = methodInfo.mangledClassAndMethodName;
+        //if (aotMetaData[mangledClassAndMethodName]) {
+        //  aotMethodCount++;
+        //  methodInfo.onStackReplacementEntryPoints = aotMetaData[methodInfo.mangledClassAndMethodName].osr;
+        //  release || assert(jsGlobal[mangledClassAndMethodName], "function must be present when aotMetaData exists");
+        //  return jsGlobal[mangledClassAndMethodName];
+        //}
+        //if (enableCompiledMethodCache) {
+        //  var cachedMethod;
+        //  if ((cachedMethod = CompiledMethodCache.get(methodInfo.implKey))) {
+        //    cachedMethodCount ++;
+        //    linkMethod(methodInfo, cachedMethod.source, cachedMethod.referencedClasses, cachedMethod.onStackReplacementEntryPoints);
+        //  }
+        //}
+        //
+        //return jsGlobal[mangledClassAndMethodName];
     }
     /**
      * Creates convenience getters / setters on Java objects.
@@ -6187,28 +6091,6 @@ var J2ME;
         return wrapper;
     }
     function getLinkedMethod(methodInfo) {
-        //这里可以进行调试函数信息
-        if (ReplaceMethod && methodInfo) {
-            // if(methodInfo.implKey.indexOf('javax')>-1)
-            // {
-            //     console.log('getLinkedMethod ',methodInfo.implKey,methodInfo);
-            // }else{
-            //     console.log('getLinkedMethod ',methodInfo.implKey,methodInfo);
-            // }                
-
-            //这里实现替换java中的方法
-            var methodjs = ReplaceMethod[methodInfo.implKey];
-            if (methodjs) {
-                console.log(methodInfo.implKey, "replaced!");
-                methodInfo.fn = methodjs;
-                methodInfo.state = 1;
-                J2ME.linkedMethods[methodInfo.id] = methodjs;
-                return methodjs;
-            }
-        }
-        if (!methodInfo) {
-            return;
-        }
         if (methodInfo.fn) {
             return methodInfo.fn;
         }
@@ -6242,7 +6124,6 @@ var J2ME;
         J2ME.runtimeCounter && J2ME.runtimeCounter.count("linkMethod");
         var fn;
         var methodType;
-        //console.log(methodInfo)
         var nativeMethod = findNativeMethodImplementation(methodInfo);
         if (nativeMethod) {
             J2ME.linkWriter && J2ME.linkWriter.writeLn("Method: " + methodInfo.name + methodInfo.signature + " -> Native");
@@ -6293,7 +6174,83 @@ var J2ME;
      * Compiles method and links it up at runtime.
      */
     function compileAndLinkMethod(methodInfo) {
-        return;
+        if (!J2ME.enableRuntimeCompilation) {
+            return;
+        }
+        // Don't do anything if we're past the compiled state.
+        if (methodInfo.state >= 1 /* Compiled */) {
+            return;
+        }
+        // Don't compile if we've compiled too many methods.
+        if (J2ME.maxCompiledMethodCount >= 0 && J2ME.compiledMethodCount >= J2ME.maxCompiledMethodCount) {
+            return;
+        }
+        // Don't compile methods that are too large.
+        if (methodInfo.codeAttribute.code.length > 4000 && !config.forceRuntimeCompilation) {
+            J2ME.jitWriter && J2ME.jitWriter.writeLn("Not compiling: " + methodInfo.implKey + " because it's too large. " + methodInfo.codeAttribute.code.length);
+            methodInfo.state = 2 /* NotCompiled */;
+            J2ME.notCompiledMethodCount++;
+            return;
+        }
+        if (J2ME.enableCompiledMethodCache) {
+            var cachedMethod;
+            if (cachedMethod = CompiledMethodCache.get(methodInfo.implKey)) {
+                J2ME.cachedMethodCount++;
+                J2ME.jitWriter && J2ME.jitWriter.writeLn("Retrieved " + methodInfo.implKey + " from compiled method cache");
+                var referencedClasses = [];
+                // Ensure referenced classes are loaded.
+                // We only need to do this for cached methods, since referenced classes
+                // get loaded automatically during JIT compilation.
+                for (var i = 0; i < cachedMethod.referencedClasses.length; i++) {
+                    referencedClasses.push(J2ME.CLASSES.getClass(cachedMethod.referencedClasses[i]));
+                }
+                linkMethodSource(methodInfo, cachedMethod.args, cachedMethod.body, referencedClasses, cachedMethod.onStackReplacementEntryPoints);
+                return;
+            }
+        }
+        var mangledClassAndMethodName = methodInfo.mangledClassAndMethodName;
+        J2ME.jitWriter && J2ME.jitWriter.enter("Compiling: " + J2ME.compiledMethodCount + " " + methodInfo.implKey + ", interpreterCallCount: " + methodInfo.stats.interpreterCallCount + " backwardsBranchCount: " + methodInfo.stats.backwardsBranchCount + " currentBytecodeCount: " + methodInfo.stats.bytecodeCount);
+        var s = performance.now();
+        var compiledMethod;
+        enterTimeline("Compiling");
+        try {
+            compiledMethod = J2ME.baselineCompileMethod(methodInfo, J2ME.enableCompiledMethodCache ? 1 /* Static */ : 0 /* Runtime */);
+            J2ME.compiledMethodCount++;
+        }
+        catch (e) {
+            methodInfo.state = 3 /* CannotCompile */;
+            J2ME.jitWriter && J2ME.jitWriter.writeLn("Cannot compile: " + methodInfo.implKey + " because of " + e);
+            leaveTimeline("Compiling");
+            return;
+        }
+        leaveTimeline("Compiling");
+        if (J2ME.codeWriter) {
+            J2ME.codeWriter.writeLn("// Method: " + methodInfo.implKey);
+            J2ME.codeWriter.writeLn("// Arguments: " + compiledMethod.args.join(", "));
+            J2ME.codeWriter.writeLn("// Referenced Classes: ");
+            for (var i = 0; i < compiledMethod.referencedClasses.length; i++) {
+                J2ME.codeWriter.writeLn("// " + i + ": " + compiledMethod.referencedClasses[i].getClassNameSlow());
+            }
+            J2ME.codeWriter.writeLns(compiledMethod.body);
+        }
+        if (J2ME.enableCompiledMethodCache) {
+            CompiledMethodCache.put({
+                key: methodInfo.implKey,
+                args: compiledMethod.args,
+                body: compiledMethod.body,
+                referencedClasses: compiledMethod.referencedClasses.map(function (v) { return v.getClassNameSlow(); }),
+                onStackReplacementEntryPoints: compiledMethod.onStackReplacementEntryPoints
+            });
+        }
+        linkMethodSource(methodInfo, compiledMethod.args, compiledMethod.body, compiledMethod.referencedClasses, compiledMethod.onStackReplacementEntryPoints);
+        var methodJITTime = (performance.now() - s);
+        totalJITTime += methodJITTime;
+        if (J2ME.jitWriter) {
+            J2ME.jitWriter.leave("Compilation Done: " + methodJITTime.toFixed(2) + " ms, " +
+                "codeSize: " + methodInfo.codeAttribute.code.length + ", " +
+                "sourceSize: " + compiledMethod.body.length);
+            J2ME.jitWriter.writeLn("Total: " + totalJITTime.toFixed(2) + " ms");
+        }
     }
     J2ME.compileAndLinkMethod = compileAndLinkMethod;
     function wrapMethod(fn, methodInfo, methodType) {
@@ -6306,26 +6263,9 @@ var J2ME;
         return fn;
     }
     function linkMethodFunction(methodInfo, fn, methodType) {
-
-
-        // if(ReplaceMethod)
-        // {
-        //     //这里实现替换java中的方法
-        //     var methodjs=ReplaceMethod[methodInfo.implKey];
-        //     if(methodjs)
-        //     {
-        //         console.log(methodInfo.implKey,"replaced!");
-        //         methodInfo.fn = methodjs;
-        //         methodInfo.state=1;
-        //         J2ME.linkedMethods[methodInfo.id] = methodjs;
-        //         return;
-        //     }   
-        // } 
-
         if (profile || J2ME.traceWriter) {
             fn = wrapMethod(fn, methodInfo, methodType);
         }
-
         methodInfo.fn = fn;
         J2ME.linkedMethods[methodInfo.id] = fn;
     }
@@ -6623,7 +6563,7 @@ var J2ME;
     }
     J2ME.throwNegativeArraySizeException = throwNegativeArraySizeException;
     function throwNullPointerException() {
-        //console.log('newNullPointerException');
+        console.log('newNullPointerException');
         //throw $.newNullPointerException();
     }
     J2ME.throwNullPointerException = throwNullPointerException;
@@ -6686,14 +6626,12 @@ var J2ME;
     }
     J2ME.checkArrayBounds = checkArrayBounds;
     function throwArrayIndexOutOfBoundsException(index) {
-        console.log("newArrayIndexOutOfBoundsException ");
+        //console.log("newArrayIndexOutOfBoundsException ");
         //throw $.newArrayIndexOutOfBoundsException(String(index));
     }
     J2ME.throwArrayIndexOutOfBoundsException = throwArrayIndexOutOfBoundsException;
     function throwArithmeticException() {
-        //hide this!!!! - by zixing
-        //console.log("error / by zero")
-        //throw $.newArithmeticException("/ by zero");
+        throw $.newArithmeticException("/ by zero");
     }
     J2ME.throwArithmeticException = throwArithmeticException;
     function checkArrayStore(arrayAddr, valueAddr) {
@@ -6703,9 +6641,8 @@ var J2ME;
         var arrayClassInfo = J2ME.classIdToClassInfoMap[i32[arrayAddr + 0 /* OBJ_CLASS_ID_OFFSET */ >> 2]];
         var valueClassInfo = J2ME.classIdToClassInfoMap[i32[valueAddr + 0 /* OBJ_CLASS_ID_OFFSET */ >> 2]];
         if (!isAssignableTo(valueClassInfo, arrayClassInfo.elementClass)) {
+            //throw $.newArrayStoreException(); 
             console.log('newArrayStoreException');
-            return;
-            throw $.newArrayStoreException();
         }
     }
     J2ME.checkArrayStore = checkArrayStore;
@@ -6732,10 +6669,6 @@ var J2ME;
     }
     J2ME.monitorExit = monitorExit;
     function translateException(e) {
-        if (!e) {
-            return e;
-        }
-        //console.log('translateException',e);
         if (e.name === "TypeError") {
             // JavaScript's TypeError is analogous to a NullPointerException.
             return $.newNullPointerException(e.message);
@@ -7609,33 +7542,17 @@ var J2ME;
             return a.join("");
         };
         ByteStream.readString = function (buffer) {
-
-            var ret = '';
             var length = buffer.length;
             if (length === 1) {
                 var c = buffer[0];
                 if (c <= 0x7f) {
-                    ret = String.fromCharCode(c);
-                    if (debugString) {
-                        console.log('ByteStream.readString ' + ret);
-                    }
-                    return ret;
+                    return String.fromCharCode(c);
                 }
             }
             else if (length < 128) {
-
-                ret = ByteStream.readStringFast(buffer);
-                if (debugString) {
-                    console.log('ByteStream.readString(readStringFast) ' + ret);
-                }
-                return ret;
+                return ByteStream.readStringFast(buffer);
             }
-
-            ret = ByteStream.readStringSlow(buffer);
-            if (debugString) {
-                console.log('ByteStream.readString(readStringSlow) ' + ret);
-            }
-            return ret;
+            return ByteStream.readStringSlow(buffer);
         };
         ByteStream.readStringSlow = function (buffer) {
             // First try w/ TextDecoder, fallback to manually parsing if there was an
@@ -8306,9 +8223,6 @@ var J2ME;
             s.seek(this.constantPool.offset);
             this.accessFlags = s.readU2();
             this.utf8Name = this.constantPool.resolveUtf8ClassName(s.readU2());
-            if (debugString) {
-                console.log('this.utf8Name', this.utf8Name);
-            }
             this.utf8SuperName = this.constantPool.resolveUtf8ClassName(s.readU2());
             this.vTable = [];
             this.fTable = [];
@@ -8317,9 +8231,6 @@ var J2ME;
             this.scanMethods();
             this.scanClassInfoAttributes();
             this.mangledName = mangleClassName(this.utf8Name);
-            if (debugString) {
-                console.log('this.mangledName ', this.mangledName);
-            }
             J2ME.leaveTimeline("ClassInfo");
             sealObjects && Object.seal(this);
         }
@@ -8408,83 +8319,68 @@ var J2ME;
         };
         ClassInfo.prototype.complete = function () {
             this.createAbstractMethods();
-            if (!this.isInterface) {
+            //if (!this.isInterface) {
                 this.buildVTable();
                 this.buildITable();
                 this.buildFTable();
-            }
+            //}
             // Notify the runtime so it can perform and necessary setup.
             if (J2ME.RuntimeTemplate) {
                 J2ME.RuntimeTemplate.classInfoComplete(this);
             }
             J2ME.loadWriter && this.trace(J2ME.loadWriter);
         };
-
+        /**
+         * Constructs the VTable for this class by appending to or overriding methods
+         * in the super class VTable.
+         */
         ClassInfo.prototype.buildVTable = function () {
-            // 获取父类VTable
-            const superClassVTable = this.superClass ? this.superClass.vTable : null;
-            const superClassVTableMap = this.superClass ? this.superClass.vTableMap : null;
-
-            // 初始化VTable
-            const vTable = this.vTable = superClassVTable ? superClassVTable.slice() : [];
-            const vTableMap = this.vTableMap = new Uint16Array(hashMapSizeMask + 1);
-
-            // 继承父类的vTableMap
-            if (superClassVTableMap) {
+            var superClassVTable = this.superClass ? this.superClass.vTable : null;
+            var vTable = this.vTable = superClassVTable ? superClassVTable.slice() : [];
+            var vTableMap = this.vTableMap = new Uint16Array(hashMapSizeMask + 1);
+            var superClassVTableMap = null;
+            if (this.superClass) {
+                superClassVTableMap = this.superClass.vTableMap;
                 vTableMap.set(superClassVTableMap);
             }
-
-            // 如果没有方法，直接返回
-            if (!this.methods) {
+            var methods = this.methods;
+            if (!methods) {
                 return;
             }
-
-            // 处理当前类的方法
-            for (let i = 0; i < this.methods.length; i++) {
-                const methodInfo = this.getMethodByIndex(i);
-
-                // 忽略静态方法和构造函数
+            for (var i = 0; i < methods.length; i++) {
+                var methodInfo = this.getMethodByIndex(i);
                 if (!methodInfo.isStatic && !strcmp(methodInfo.utf8Name, UTF8.Init)) {
-                    let vTableIndex = -1;
-
-                    // 尝试从父类VTable中找到方法
+                    var vTableIndex = -1;
                     if (superClassVTable) {
                         vTableIndex = getHashMapValue(superClassVTableMap, methodInfo.utf8Name) - 1;
                         if (vTableIndex >= 0) {
                             vTableIndex = indexOfMethod(superClassVTable, methodInfo.utf8Name, methodInfo.utf8Signature, vTableIndex);
                         }
                     }
-
-                    // 如果方法没有在父类中找到，追加到VTable，否则覆盖
                     if (vTableIndex < 0) {
                         methodInfo.vTableIndex = vTable.length;
                         vTable.push(methodInfo); // Append
                         setHashMapValue(vTableMap, methodInfo.utf8Name, methodInfo.vTableIndex + 1);
-                    } else {
+                    }
+                    else {
                         vTable[vTableIndex] = methodInfo; // Override
                         methodInfo.vTableIndex = vTableIndex;
                     }
                 }
             }
-
-            // 处理接口方法
-            const interfaces = this.getAllInterfaces();
-            for (let i = 0; i < interfaces.length; i++) {
-                const interfaceClass = interfaces[i];
-
-                for (let j = 0; j < interfaceClass.methods.length; j++) {
-                    const methodInfo = interfaceClass.getMethodByIndex(j);
-                    const vTableIndex = indexOfMethod(this.vTable, methodInfo.utf8Name, methodInfo.utf8Signature, -1);
-
+            // Go through all the interfaces and mark all methods in the vTable that implement interface methods.
+            var interfaces = this.getAllInterfaces();
+            for (var i = 0; i < interfaces.length; i++) {
+                var c = interfaces[i];
+                for (var j = 0; j < c.methods.length; j++) {
+                    var methodInfo = c.getMethodByIndex(j);
+                    var vTableIndex = indexOfMethod(this.vTable, methodInfo.utf8Name, methodInfo.utf8Signature, -1);
                     if (vTableIndex >= 0) {
-                        // 标记实现接口方法
                         this.vTable[vTableIndex].accessFlags |= 65536 /* J2ME_IMPLEMENTS_INTERFACE */;
                     }
                 }
             }
         };
-
-
         ClassInfo.prototype.buildITable = function () {
             var vTable = this.vTable;
             var iTable = this.iTable;
@@ -8597,27 +8493,11 @@ var J2ME;
             return null;
         };
         ClassInfo.prototype.getMethodByName = function (utf8Name, utf8Signature) {
-
-
             var c = this;
             do {
                 var i = c.indexOfMethod(utf8Name, utf8Signature);
                 if (i >= 0) {
-                    var method = c.getMethodByIndex(i);
-                    // if(ReplaceMethod)
-                    // {
-                    //     var methodInfo=method;
-                    //     //这里实现替换java中的方法
-                    //     var methodjs=ReplaceMethod[methodInfo.implKey];
-                    //     if(methodjs)
-                    //     {
-                    //         console.log(methodInfo.implKey,"replaced!"); 
-                    //         method.fn = methodjs;
-                    //         method.state=1;
-                    //         return method;
-                    //     }   
-                    // } 
-                    return method;
+                    return c.getMethodByIndex(i);
                 }
                 c = c.superClass;
             } while (c);
@@ -8626,19 +8506,6 @@ var J2ME;
                 for (var n = 0; n < interfaces.length; ++n) {
                     var method = interfaces[n].getMethodByName(utf8Name, utf8Signature);
                     if (method) {
-                        // if(ReplaceMethod)
-                        // {
-                        //     var methodInfo=method;
-                        //     //这里实现替换java中的方法
-                        //     var methodjs=ReplaceMethod[methodInfo.implKey];
-                        //     if(methodjs)
-                        //     {
-                        //         console.log(methodInfo.implKey,"replaced!"); 
-                        //         method.fn = methodjs;
-                        //         method.state=1;
-                        //         return method; 
-                        //     }   
-                        // }  
                         return method;
                     }
                 }
@@ -8791,23 +8658,19 @@ var J2ME;
             return false;
         };
         ClassInfo.prototype.isAssignableTo = function (toClass) {
-            try {
-                if (this === toClass) {
-                    return true;
-                }
-                if (toClass.isInterface) {
-                    return this.getAllInterfaces().indexOf(toClass) >= 0;
-                }
-                else if (toClass.elementClass) {
-                    if (!this.elementClass) {
-                        return false;
-                    }
-                    return this.elementClass.isAssignableTo(toClass.elementClass);
-                }
-                return this.getDisplay()[toClass.depth] === toClass;
-            } catch (err) {
-                return false;
+            if (this === toClass) {
+                return true;
             }
+            if (toClass.isInterface) {
+                return this.getAllInterfaces().indexOf(toClass) >= 0;
+            }
+            else if (toClass.elementClass) {
+                if (!this.elementClass) {
+                    return false;
+                }
+                return this.elementClass.isAssignableTo(toClass.elementClass);
+            }
+            return this.getDisplay()[toClass.depth] === toClass;
         };
         /**
           * Creates lookup tables used to efficiently implement type checks.
@@ -9276,10 +9139,6 @@ var J2ME;
                 "java/lang/StringIndexOutOfBoundsException",
                 // Preload the Isolate class, that is needed to start the VM (see jvm.ts)
                 "com/sun/cldc/isolate/Isolate",
-                // "java/io/InputStream",
-                // "org/recompile/mobile/MobilePlatform",
-                // "org/recompile/mobile/Mobile",
-                // "org/recompile/mobile/PlatformImage"
             ];
             for (var i = 0; i < classNames.length; i++) {
                 this.preInitializedClasses.push(this.loadClass(classNames[i]));
@@ -9291,8 +9150,6 @@ var J2ME;
                 this.getClass("[" + primitiveTypes[i]);
             }
             J2ME.leaveTimeline("initializeBuiltinClasses");
-
-
         };
         ClassRegistry.prototype.isPreInitializedClass = function (classInfo) {
             if (classInfo instanceof J2ME.PrimitiveClassInfo) {
@@ -9342,10 +9199,10 @@ var J2ME;
             var bytes = JARStore.loadFile(fileName);
             //console.log(bytes)
             if (!bytes) {
-                console.warn("ClassNotFoundException " + fileName);
+                console.warn("ClassNotFoundException"+fileName);
                 //J2ME.loadWriter && J2ME.loadWriter.leave("< ClassNotFoundException");
-                throw new (J2ME.ClassNotFoundException)(fileName);
-                //return;
+                //throw new (J2ME.ClassNotFoundException)(fileName);
+                return;
             }
             var self = this;
             var classInfo = this.loadClassBytes(bytes);
@@ -9462,7 +9319,7 @@ var J2ME;
 (function (J2ME) {
     var Bindings = {
         "java/lang/Object": {
-            native: {
+            native: { 
                 "hashCode.()I": function () {
                     var self = this;
                     if (self._hashCode) {
@@ -9797,55 +9654,6 @@ var J2ME;
         J2ME.BindingsMap.put(J2ME.toUTF8(k), Bindings[k]);
     }
 })(J2ME || (J2ME = {}));
-
-
-//js替代的java方法
-var ReplaceMethod = Object.create(null);
-
-
-// ReplaceMethod["org/recompile/mobile/Mobile.getPlatform()Lorg/recompile/mobile/MobilePlatform;"] = function (addr) { 
-
-//     console.log("getPlatform",addr);
-
-// };
-// ReplaceMethod["org/recompile/mobile/Mobile.getPlatform.()Lorg/recompile/mobile/MobilePlatform;"] = function (addr) { 
-
-//     console.log("getPlatform",addr);
-
-// };
-
-
-//javax/microedition/lcdui/game/LayerManager.<init>()V
-// ReplaceMethod["javax/microedition/lcdui/game/LayerManager.<init>.()V"] = function (addr) { 
-
-//     console.log("LayerManager.init",addr);
-
-// }; 
-
-// ReplaceMethod["javax/microedition/lcdui/Image.getWidth.()I"] = function (addr) { 
-
-//     console.log("getWidth",addr);
-
-//     return J2ME.returnLongValue(240);
-// };
-// ReplaceMethod["javax/microedition/lcdui/Image.getHeight.()I"] = function (addr) { 
-
-//     console.log("getHeight",addr);
-//     return J2ME.returnLongValue(320);
-// };
-
-// ReplaceMethod["javax/microedition/lcdui/Image.createImage.(II)Ljavax/microedition/lcdui/Image;"] = function (addr) { 
-
-//     console.log("Image.createImage",addr);
-
-// };
-
-// ReplaceMethod["javax/microedition/lcdui/Image.createImage(II)Ljavax/microedition/lcdui/Image;"] = function (addr) { 
-
-//     console.log("Image.createImage",addr);
-
-// };
-
 var Native = Object.create(null);
 /**
  * Asm.js heap buffer and views.
@@ -9924,7 +9732,8 @@ var J2ME;
             var methodInfo = classInfo.getMethodByNameString("throwException", "(Ljava/lang/Exception;)V");
             thread.pushMarkerFrame(J2ME.FrameType.Interrupt);
             thread.pushFrame(methodInfo);
-            if (!exception) {
+            if(!exception)
+            {
                 return;
             }
             thread.frame.setParameter(8 /* Reference */, 0, exception._address);
@@ -9936,7 +9745,6 @@ var J2ME;
     }
     J2ME.asyncImpl = asyncImpl;
     Native["java/lang/Thread.sleep.(J)V"] = function (addr, delayL, delayH) {
-        //console.log('Thread.sleep',delayL,delayH,J2ME.longToNumber(delayL, delayH))
         asyncImpl(9 /* Void */, new Promise(function (resolve, reject) {
             window.setTimeout(resolve, J2ME.longToNumber(delayL, delayH));
         }));
@@ -10024,7 +9832,6 @@ var J2ME;
         }
     };
     Native["java/lang/Throwable.fillInStackTrace.()V"] = function (addr) {
-
         var frame = $.ctx.nativeThread.frame;
         var tp = $.ctx.nativeThread.tp;
         var fp = frame.fp;
@@ -10242,7 +10049,7 @@ var J2ME;
     var Scheduler = (function () {
         function Scheduler() {
         }
-        Scheduler.enqueue = function (ctx, directExecution) {
+        Scheduler.enqueue = function (ctx, directExecution) { 
             if (ctx.virtualRuntime === 0) {
                 // Ensure the new thread doesn't dominate.
                 ctx.virtualRuntime = minVirtualRuntime;
@@ -10378,7 +10185,6 @@ var J2ME;
     /**
      * Toggle VM tracing here.
      */
-    //这里可以进行调试
     J2ME.writers = WriterFlags.None;
     Array.prototype.push2 = function (value) {
         this.push(value);
@@ -10416,9 +10222,6 @@ var J2ME;
         JVM.prototype.createIsolateCtx = function () {
             var runtime = new J2ME.Runtime(this);
             var ctx = new Context(runtime);
-
-
-
             ctx.threadAddress = runtime.mainThread = J2ME.allocObject(J2ME.CLASSES.java_lang_Thread);
             J2ME.setNative(ctx.threadAddress, ctx);
             var thread = J2ME.getHandle(ctx.threadAddress);
@@ -10426,7 +10229,7 @@ var J2ME;
             thread.pid = util.id();
             thread.nativeAlive = true;
             // The constructor will set the real priority, however one is needed for the scheduler.
-            thread.priority = J2ME.NORMAL_PRIORITY;
+            thread.priority = J2ME.NORMAL_PRIORITY; 
             runtime.preInitializeClasses(ctx);
             return ctx;
         };
@@ -10444,7 +10247,7 @@ var J2ME;
             }
             J2ME.unsetUncollectable(arrayAddr);
             ctx.nativeThread.frame.setParameter(8 /* Reference */, 1, arrayAddr);
-            ctx.start();
+            ctx.start(); 
             release || J2ME.Debug.assert(!U, "Unexpected unwind during isolate initialization.");
         };
         JVM.prototype.startIsolate = function (isolateAddr) {
@@ -10554,10 +10357,6 @@ var J2ME;
             if (!message) {
                 message = "";
             }
-
-            console.log('createException', className, message);
-            // return J2ME.Constants.NULL;
-
             message = "" + message;
             var classInfo = J2ME.CLASSES.loadClass(className);
             J2ME.classInitCheck(classInfo);
@@ -10696,17 +10495,14 @@ var J2ME;
                 return;
             }
             if (lock.level < 0) {
-                //throw $.newIllegalMonitorStateException("Unbalanced monitor enter/exit.");
+                throw $.newIllegalMonitorStateException("Unbalanced monitor enter/exit.");
             }
             this.unblock(lock, "ready", false);
         };
         Context.prototype.wait = function (objectAddr, timeout) {
             var lock = J2ME.getMonitor(objectAddr);
-            if (timeout < 0) {
-                console.log('throw $.newIllegalArgumentException();')
-                //throw $.newIllegalArgumentException();
-                return
-            }
+            if (timeout < 0)
+                throw $.newIllegalArgumentException();
             if (!lock || lock.threadAddress !== this.threadAddress)
                 throw $.newIllegalMonitorStateException();
             var lockLevel = lock.level;

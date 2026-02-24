@@ -5,16 +5,7 @@
 		<title>j2me在线模拟器</title>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
-		<script>
-			var _hmt = _hmt || [];
-			(function() {
-				var hm = document.createElement("script");
-				hm.src = "https://hm.baidu.com/hm.js?9940f26304b1f1a1a415df829cd440f3";
-				var s = document.getElementsByTagName("script")[0];
-				s.parentNode.insertBefore(hm, s);
-			})();
-		</script>
-
+		 
 		<!-- Required for non-UTF encodings -->
 		<script src="libs/encoding.js"></script>
 		<!-- Load config scripts separately because compiled-method-cache.js
@@ -56,236 +47,7 @@
 		<script type="text/javascript" src="bld/main-all.js" defer></script>
 
 	</head>
-	<body>
-
-		<div id="pageContainer" style="display: none;">
-			<pre id="consoleContainer"></pre>
-			<div id="profilerContainer">
-				<div id="profilerToolbar">
-					<div class="toolbarLabel">Profiler <span id="profilerMessage" class="toolbarMessage">6
-							Seconds</span></div>
-					<div id="profilerButtons">
-						<div id="profilerStartStop">Start</div>
-						<div id="profilerAdjustHeight">Height</div>
-					</div>
-				</div>
-				<div id="profiler">
-					<div id="profileList">
-					</div>
-					<div id="profilePanel">
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<!-- The raw console is used for unit tests, so it's not visible by default: -->
-		<pre id="raw-console" style="display: none"></pre>
-
-		<div id="display-container" style="display: none;">
-			<div id="display">
-				<section id="sidebar" data-type="sidebar" style="display:none">
-					<header>
-						<h1>Menu</h1>
-					</header>
-					<nav>
-						<ul>
-						</ul>
-					</nav>
-				</section>
-				<section id="drawer" role="region">
-					<header style="display:none">
-						<a href="#"><span class="icon icon-menu">hide sidebar</span></a>
-						<a id="header-drawer-button" href="#drawer"><span class="icon icon-menu">show sidebar</span></a>
-						<menu id="header-ok-button" type="toolbar" style="display:none"><button>√</button></menu>
-						<h1 id="display_title"></h1>
-					</header>
-					<div id="main" role="main">
-						<canvas id="canvas"></canvas>
-						<input id="password-editor" class="text-editor" type="password">
-						<input id="tel-editor" class="text-editor" type="tel">
-						<input id="number-editor" class="text-editor" type="number">
-						<input id="email-editor" class="text-editor" type="email">
-						<input id="url-editor" class="text-editor" type="url">
-						<div id="textarea-editor" class="text-editor" contenteditable="true"></div>
-						<!-- The hidden textarea editor is used to measure the content height -->
-						<div id="hidden-textarea-editor" class="text-editor"></div>
-						<button id="back-button">Back</button>
-					</div>
-				</section>
-
-				<div id="gamepad" onselectstart='return false' οnselect='document.selection.empty()'>
-					<div id="padcontent">
-						<button>1</button>
-						<button>2</button>
-						<button>3</button>
-						<button>L</button>
-						<div></div>
-						<button>R</button>
-					</div>
-					<div id="padcontent">
-						<button>4</button>
-						<button>5</button>
-						<button>6</button>
-						<div></div>
-						<button>up</button>
-					</div>
-					<div id="padcontent">
-						<button>7</button>
-						<button>8</button>
-						<button>9</button>
-						<button>left</button>
-						<button>OK</button>
-						<button>right</button>
-					</div>
-					<div id="padcontent">
-						<button>*</button>
-						<button>0</button>
-						<button>#</button>
-						<div></div>
-						<button>down</button>
-					</div>
-				</div>
-
-				<div id="download-screen" class="screen">
-					<h1 class="title">Downloading midlet…</h1>
-					<div class="download-progress-container">
-						<progress class="pack-activity" value="0" max="100"></progress>
-					</div>
-				</div>
-
-				<div id="splash-screen" class="screen">
-					<h1 class="title">Starting midlet…</h1>
-					<div class="splash-progress-container">
-						<progress></progress>
-					</div>
-				</div>
-
-				<div id="exit-screen" class="screen">
-				</div>
-
-				<div id="background-screen">
-				</div>
-
-				<form role="dialog" data-type="confirm" class="lcdui-alert" id="lcdui-alert" style="display: none">
-					<section>
-						<h1 class="title"></h1>
-						<p class="text"></p>
-						<p style="border-top: 0"><progress style="display: none"></progress></p>
-					</section>
-					<menu>
-						<button class="button0" style="display: none"></button>
-						<button class="button1" style="display: none"></button>
-					</menu>
-				</form>
-
-				<form role="dialog" data-type="confirm" class="sms-listener-prompt" id="sms-listener-prompt"
-					style="display: none">
-					<section>
-						<h1>SMS Verification</h1>
-						<p class="verificationText"></p>
-						<input type="text" placeholder="Type SMS Here">
-						<p class="timeLeft"></p>
-						<progress class="timeLeftBar" value="0" max="100"></progress>
-					</section>
-					<menu>
-						<button class="cancel">Cancel</button>
-						<button class="recommend">Done</button>
-					</menu>
-				</form>
-
-				<form role="dialog" data-type="confirm" class="nokia-fileui-prompt" id="nokia-fileui-prompt"
-					style="display: none">
-					<section>
-						<h1>Select a file</h1>
-						<p><input type="file" name="nokia-fileui-file">
-					</section>
-					<menu>
-						<button class="cancel">Cancel</button>
-						<button class="recommend">Done</button>
-					</menu>
-				</form>
-
-				<form role="dialog" data-type="confirm" class="download-failure-dialog" id="download-failure-dialog"
-					style="display: none">
-					<section>
-						<h1 class="download-dialog-text">Download failure</h1>
-						<p>The download of midlet failed. Press <i>Retry</i> to try again.</p>
-					</section>
-					<menu>
-						<button class="recommend">Retry</button>
-					</menu>
-				</form>
-			</div>
-			<div id="settings">
-				<section>
-					<table id="counters">
-						<tr>
-							<td>Bytecode:</td>
-							<td><span id="bytecodeCount"></span></td>
-						</tr>
-						<tr>
-							<td>Compiled:</td>
-							<td><span id="compiledCount"></span></td>
-						</tr>
-						<tr>
-							<td>Interpreter:</td>
-							<td><span id="interpreterCount"></span></td>
-						</tr>
-						<tr>
-							<td>OSR:</td>
-							<td><span id="onStackReplacementCount"></span></td>
-						</tr>
-						<tr>
-							<td>Unwind:</td>
-							<td><span id="unwindCount"></span></td>
-						</tr>
-						<tr>
-							<td>Preemption:</td>
-							<td><span id="preemptionCount"></span></td>
-						</tr>
-					</table>
-				</section>
-				<section>
-					<select id="loglevel">
-						<option value="0">Log Level: Trace
-						<option value="1">Log Level: Log
-						<option value="2">Log Level: Info
-						<option value="3">Log Level: Warn
-						<option value="4">Log Level: Error
-						<option value="5">Log Level: Silent
-					</select>
-					<input id="console-filter-input" type="text" placeholder="Filter Console Output" value="">
-					<button id="console-clear">Clear console</button>
-					<button id="console-save">Save console</button>
-					<label><input type="checkbox" id="perfWriter">Perf</label>
-				</section>
-				<section>
-					<button id="exportstorage">Export File System</button>
-					<div>Import File System:</div>
-					<input type="file" id="importstoragefile">
-					<input type="text" id="importstorageurl" placeholder="URL to FS backup">
-					<button id="importstorage">Import</button>
-					<button id="clearCompiledMethodCache">Clear Compiled Method Cache</button>
-					<button id="deleteDatabases">Delete IDB Databases</button>
-					<button id="printAllExceptions">Print all exceptions: OFF</button>
-					<button id="clearCounters">Clear Counters</button>
-					<button id="dumpCounters">Dump Counters</button>
-					<button id="sampleCounters1">One sample for 1s</button>
-					<button id="sampleCounters2">One sample for 100ms (2s)</button>
-					<select id="canvasSize1">
-						<option value="" selected>Display size: 240x320</option>
-						<option value="size-320x240">Display size: 320x240</option>
-						<option value="size-320x480">Display size: 320x480</option>
-						<option value="size-480x320">Display size: 480x320</option>
-					</select>
-					<button id="start">Start</button>
-
-				</section>
-			</div>
-		</div>
-
-
-
+	<body> 
 		<input id="jarFileupload" accept=".jar" type="file" style="visibility: hidden;display:none;" />
 		
 		<p> <a href="/" style="font-weight: bold"><h3> 回到主页 </h3></a></p>
@@ -298,109 +60,91 @@
 				var GameList = [{
 						name: "Anyview",
 						jarName: "Anyview4.0.jar",
-						midletClassName: "com.ismyway.anyview.Anyview",
 						picPath: "img/anyview.png"
 					},
 					{
 						name: "狂野飙车6",
 						jarName: "kybc6.jar",
-						midletClassName: "GloftASP6",
 						picPath: "img/kybc6.png"
 					},
 					{
 						name: "植物大战僵尸",
 						jarName: "pvz.jar",
-						midletClassName: "Game",
 						picPath: "img/pvz.png"
 					},
 					{
 						name: "刺客信条3",
 						jarName: "ckxt3.jar",
-						midletClassName: "GloftASBR",
 						picPath: "img/ckxt3.png"
 					},
 					{
 						name: "开心农场",
 						jarName: "kxnc.jar",
-						midletClassName: "FarmMIDlet",
 						picPath: "img/kxnc.png"
 					},
 					{
 						name: "RF18",
 						jarName: "rf18.jar",
-						midletClassName: "GloftR8FP",
 						picPath: "img/rf18.png"
 					},
 					{
 						name: "BounceTales",
 						jarName: "BounceTales.jar",
-						midletClassName: "RMIDlet",
 						picPath: "img/BounceTales.png"
 					},
 					{
 						name: "极限拉力赛2",
 						jarName: "jxlls.jar",
-						midletClassName: "baltorogames.system.Application",
 						picPath: "img/jxlls.png"
 					},
 					{
 						name: "斗地主",
 						jarName: "ddz.jar",
-						midletClassName: "GameMidlet",
 						picPath: "img/ddz.png"
 					},
 					{
 						name: "GTA5",
 						jarName: "gta.jar",
-						midletClassName: "SaintsRow2",
 						picPath: "img/gta.png"
 					},
 					{
 						name: "涂鸦跳跃",
 						jarName: "tyty.jar",
-						midletClassName: "S",
 						picPath: "img/tyty.png"
 					},{
 						name: "中国象棋",
 						jarName: "chess.jar",
-						midletClassName: "com.chess.Tmpmidlet",
 						picPath: "img/chess.png"
 					},
 					{
 						name: "模拟人生3",
 						jarName: "sim3.jar",
-						midletClassName: "com.ea.sims3.MonkeyApp",
 						picPath: "img/sim3.png"
 					},
 					{
 						name: "韩版开心农场",
 						jarName: "kxnckr.jar",
-						midletClassName: "com.auer.title.GameMidlet",
 						picPath: "img/kxnckr.png"
 					},
 					{
 						name: "侏罗纪公园-巨兽归来",
 						jarName: "dragon.jar",
-						midletClassName: "GloftJUPK",
 						picPath: "img/dragon.png"
 					},
 					{
 						name: "鳄鱼小顽皮爱洗澡",
 						jarName: "WheresMyWater.jar",
-						picPath: "img/WheresMyWater.png",
-						midletClassName: "xor.wimw.j2me.src.WIMWGameController"
+						picPath: "img/WheresMyWater.png"
 					},
 					{
-						name: "实况足球",
+						name: "实况足球2020",
 						jarName: "skzq.jar",
-						picPath: "img/skzq.png",
-						midletClassName: "a"
+						picPath: "img/skzq.png"
 					},
 					{
 						name: "QQ2010触屏版",
 						jarName: "QQ2010_touch.jar",
-						picPath: "img/QQ2010_touch.png",
-						midletClassName: "com.tencent.kqq2006.MainMIDlet"
+						picPath: "img/QQ2010_touch.png"
 					},{
 						name: "时光樱花册-遗失之心",
 						jarName: "sgyhc.jar",
@@ -441,6 +185,16 @@
 						name: "文明V触屏大屏版",
 						jarName: "c5big.jar",
 						picPath: "img/c5big.png"
+					},
+					{
+						name: "极品飞车13-变速中文",
+						jarName: "nfs13.jar",
+						picPath: "img/nfs13.png"
+					},
+					{
+						name: "黑神话悟空",
+						jarName: "wukong.jar",
+						picPath: "img/wukong.png"
 					}
 				]
 				// 初始化游戏列表
@@ -670,6 +424,9 @@
 			<select id="canvasSize" class="filter-box">
 				<option value="size-240x320">显示尺寸: 240x320</option>
 				<option value="size-320x240">显示尺寸: 320x240</option>
+				<option value="size-128x128">显示尺寸: 128x128</option>
+				<option value="size-176x220">显示尺寸: 176x220</option>
+				
 				<option value="size-240x400">显示尺寸: 240x400</option>
 				<option value="size-400x240">显示尺寸: 400x240</option>
 				<option value="size-360x640">显示尺寸: 360x640</option>
@@ -687,7 +444,9 @@
 			</select>
 
 			<select id="gameresize" class="filter-box">
-				<option value="resize-1" selected>无缩放</option>
+				<option value="resize-1" selected>无缩放</option> 
+				<option value="resize-0x5">缩放0.5倍</option>
+				<option value="resize-0x75">缩放0.75倍</option>
 				<option value="resize-1x5">缩放1.5倍</option>
 				<option value="resize-2">缩放2倍</option>
 				<option value="resize-2x5">缩放2.5倍</option>
@@ -753,7 +512,6 @@
 				}
 
 				select {
-					background-image: url(backdropdown.png);
 					background-position: 222px 9px;
 					font-family: Roboto;
 					font-size: 12px;
@@ -776,24 +534,24 @@
 				}
 
 				.btn {
-					background: #eb94d0;
+					background: #2079b0;
 					/* 创建渐变 */
-					background-image: -webkit-linear-gradient(top, #eb94d0, #2079b0);
-					background-image: -moz-linear-gradient(top, #eb94d0, #2079b0);
-					background-image: -ms-linear-gradient(top, #eb94d0, #2079b0);
-					background-image: -o-linear-gradient(top, #eb94d0, #2079b0);
-					background-image: linear-gradient(to bottom, #eb94d0, #2079b0);
+					/* background-image: -webkit-linear-gradient(top, #2079b0, #2079b0);
+					background-image: -moz-linear-gradient(top, #2079b0, #2079b0);
+					background-image: -ms-linear-gradient(top, #2079b0, #2079b0);
+					background-image: -o-linear-gradient(top, #2079b0, #2079b0);
+					background-image: linear-gradient(to bottom, #2079b0, #2079b0); */
 					/* 给按钮添加圆角 */
 					-webkit-border-radius: 8;
 					-moz-border-radius: 8;
 					border-radius: 8px;
-					text-shadow: 3px 2px 1px #9daef5;
+					/* text-shadow: 3px 2px 1px #9daef5; */
 					-webkit-box-shadow: 6px 5px 24px #666666;
 					-moz-box-shadow: 6px 5px 24px #666666;
 					box-shadow: 6px 5px 24px #666666;
 					font-family: Arial;
 					color: #fafafa;
-					font-size: 9px;
+					font-size: 12px;
 					padding: 10px;
 					text-decoration: none;
 					margin-right: 5px;
@@ -802,11 +560,11 @@
 				/* 悬停样式 */
 				.btn:hover {
 					background: #2079b0;
-					background-image: -webkit-linear-gradient(top, #2079b0, #eb94d0);
-					background-image: -moz-linear-gradient(top, #2079b0, #eb94d0);
-					background-image: -ms-linear-gradient(top, #2079b0, #eb94d0);
-					background-image: -o-linear-gradient(top, #2079b0, #eb94d0);
-					background-image: linear-gradient(to bottom, #2079b0, #eb94d0);
+					/* background-image: -webkit-linear-gradient(top, #2079b0, #2079b0);
+					background-image: -moz-linear-gradient(top, #2079b0, #2079b0);
+					background-image: -ms-linear-gradient(top, #2079b0, #2079b0);
+					background-image: -o-linear-gradient(top, #2079b0, #2079b0);
+					background-image: linear-gradient(to bottom, #2079b0, #2079b0); */
 					text-decoration: none;
 				}
 
@@ -927,7 +685,6 @@
 				}
 
 				select {
-					background-image: url(backdropdown.png);
 					background-position: 222px 9px;
 					font-family: Roboto;
 					font-size: 12px;
@@ -945,30 +702,30 @@
 					border-radius: 5px;
 					text-align: center;
 					margin-top: 10px;
-					font-size: 9px;
+					font-size: 12px;
 					padding-bottom: 10px;
 				}
 
 				.btn {
 					margin-top: 5px;
-					background: #eb94d0;
+					background: #2079b0;
 					/* 创建渐变 */
-					background-image: -webkit-linear-gradient(top, #eb94d0, #2079b0);
-					background-image: -moz-linear-gradient(top, #eb94d0, #2079b0);
-					background-image: -ms-linear-gradient(top, #eb94d0, #2079b0);
-					background-image: -o-linear-gradient(top, #eb94d0, #2079b0);
-					background-image: linear-gradient(to bottom, #eb94d0, #2079b0);
+					/* background-image: -webkit-linear-gradient(top, #2079b0, #2079b0);
+					background-image: -moz-linear-gradient(top, #2079b0, #2079b0);
+					background-image: -ms-linear-gradient(top, #2079b0, #2079b0);
+					background-image: -o-linear-gradient(top, #2079b0, #2079b0);
+					background-image: linear-gradient(to bottom, #2079b0, #2079b0); */
 					/* 给按钮添加圆角 */
 					-webkit-border-radius: 8;
 					-moz-border-radius: 8;
 					border-radius: 8px;
-					text-shadow: 3px 2px 1px #9daef5;
+					/* text-shadow: 3px 2px 1px #9daef5; */
 					-webkit-box-shadow: 6px 5px 24px #666666;
 					-moz-box-shadow: 6px 5px 24px #666666;
 					box-shadow: 6px 5px 24px #666666;
 					font-family: Arial;
 					color: #fafafa;
-					font-size: 9px;
+					font-size: 12px;
 					padding: 10px;
 					text-decoration: none;
 					margin-right: 5px;
@@ -977,11 +734,11 @@
 				/* 悬停样式 */
 				.btn:hover {
 					background: #2079b0;
-					background-image: -webkit-linear-gradient(top, #2079b0, #eb94d0);
-					background-image: -moz-linear-gradient(top, #2079b0, #eb94d0);
-					background-image: -ms-linear-gradient(top, #2079b0, #eb94d0);
-					background-image: -o-linear-gradient(top, #2079b0, #eb94d0);
-					background-image: linear-gradient(to bottom, #2079b0, #eb94d0);
+					/* background-image: -webkit-linear-gradient(top, #2079b0, #2079b0);
+					background-image: -moz-linear-gradient(top, #2079b0, #2079b0);
+					background-image: -ms-linear-gradient(top, #2079b0, #2079b0);
+					background-image: -o-linear-gradient(top, #2079b0, #2079b0);
+					background-image: linear-gradient(to bottom, #2079b0, #2079b0); */
 					text-decoration: none;
 				}
 
@@ -1069,5 +826,14 @@
 				}
 			}
 		</style>
+		<script>
+			var _hmt = _hmt || [];
+			(function() {
+				var hm = document.createElement("script");
+				hm.src = "http://hm.baidu.com/hm.js?9940f26304b1f1a1a415df829cd440f3";
+				var s = document.getElementsByTagName("script")[0];
+				s.parentNode.insertBefore(hm, s);
+			})();
+		</script>
 	</body>
 </html>
