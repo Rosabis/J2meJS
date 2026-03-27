@@ -1,4 +1,11 @@
 //var midiplayer;
+
+//debugString ByteStream.readString(readStringFast)
+var debugString=0;
+
+//是否启用兼容模式（兼容模式使用旧的classes.jar）
+var enginemode=0;
+
 //是否是主页
 var isIndex = window.location.href.indexOf('main.html')==-1;
 var isLoadJarFinished = false;
@@ -7,6 +14,10 @@ var mytitle="";
 var mycontent="";
 //缩放大小，为了支持缩放后的触摸
 var gamesca=1;
+//定义屏幕宽高
+var lcdWidth=240;
+var lcdHeight=320;
+
 //1是pAudio, pAudio已经被移除
 //2是webaudio-tinysynth
 //3是Audio标签
@@ -522,6 +533,8 @@ Native["java/lang/System.getProperty0.(Ljava/lang/String;)Ljava/lang/String;"] =
     case "wireless.messaging.sms.smsc":
       value = "+8610086";
       break;
+    case "IMEI":
+      return "123456789012345";
     default:
       if (MIDP.additionalProperties[key]) {
         value = MIDP.additionalProperties[key];
@@ -3764,7 +3777,8 @@ var fs = function() {
   return {normalize:normalizePath, dirname:dirname, init:init, open:open, close:close, read:read, write:write, getpos:getpos, setpos:setpos, getsize:getsize, flush:flush, list:list, exists:exists, truncate:truncate, ftruncate:ftruncate, remove:remove, create:create, mkdir:mkdir, mkdirp:mkdirp, size:size, rename:rename, stat:stat, clear:clear, syncStore:syncStore, exportStore:exportStore, importStore:importStore, deleteDatabase:deleteDatabase, createUniqueFile:createUniqueFile, getBlob:getBlob};
 }();
 var initialDirs = ["/MemoryCard", "/Persistent", "/Phone", "/Phone/_my_downloads", "/Phone/_my_pictures", "/Phone/_my_videos", "/Phone/_my_recordings", "/Private"];
-var initialFiles = [{sourcePath:"certs/_main.ks", targetPath:"/_main.ks"}];
+//var initialFiles = [{sourcePath:"certs/_main.ks", targetPath:"/_main.ks"}];
+var initialFiles = [];
 var initFS = (new Promise(function(resolve, reject) {
   fs.init(resolve);
 })).then(function() {
@@ -3777,7 +3791,7 @@ var initFS = (new Promise(function(resolve, reject) {
 }).then(function() {
   var filePromises = [];
   if (typeof config !== "undefined" && config.midletClassName == "RunTestsMIDlet") {
-    initialFiles.push({sourcePath:"certs/_test.ks", targetPath:"/_test.ks"});
+    //initialFiles.push({sourcePath:"certs/_test.ks", targetPath:"/_test.ks"});
   }
   initialFiles.forEach(function(file) {
     filePromises.push(new Promise(function(resolve, reject) {
@@ -6403,7 +6417,10 @@ if (typeof module !== "undefined" && module.exports) {
         {
           var canx =parseInt(config.canvasSize.split("-")[1].split("x")[0]);
           var cany =parseInt(config.canvasSize.split("-")[1].split("x")[1]);
-          
+
+          lcdWidth=canx;
+          lcdHeight = cany;
+
             deviceCanvas.height = cany;
             deviceCanvas.width = canx;
             deviceCanvas.style.height = deviceCanvas.height + "px";
@@ -6649,6 +6666,10 @@ if (typeof module !== "undefined" && module.exports) {
       case "com.sun.midp.io.http.output_buffer_size":
         value = null;
         break;
+
+      case 'DisableStartupErrorAlert':
+        value = "0";
+        break; 
       default:
         console.warn("UNKNOWN PROPERTY (com/sun/midp/main/Configuration): " + key);
         value = null;
@@ -6657,7 +6678,7 @@ if (typeof module !== "undefined" && module.exports) {
     return J2ME.newString(value);
   };
   Native["com/sun/midp/util/ResourceHandler.loadRomizedResource0.(Ljava/lang/String;)[B"] = function(addr, fileAddr) {
-    var fileName = "assets/0/" + J2ME.fromStringAddr(fileAddr).replace("_", ".").replace("_png", ".png").replace("_raw", ".raw");
+    var fileName = "assets/0/" + J2ME.fromStringAddr(fileAddr).replace("_", ".").replace("_png", ".png").replace("_raw", ".png");//modify to png 
     var data = JARStore.loadFile(fileName);
     if (!data) {
       console.warn("ResourceHandler::loadRomizedResource0: file " + fileName + " not found");
@@ -8415,6 +8436,28 @@ var currentlyFocusedTextEditor;
       };
     }));
   };
+  //同步
+  // Native["javax/microedition/lcdui/ImageDataFactory.createImmutableImageDecodeImage.(Ljavax/microedition/lcdui/ImageData;[BII)V"] = function(addr, imageDataAddr, bytesAddr, offset, length) {
+  //   var bytes = J2ME.getArrayFromAddr(bytesAddr);
+  //   var ctx = $.ctx;
+    
+  //   var blob = new Blob([bytes.subarray(offset, offset + length)], {type:"image/png"});
+  //   var img = new Image;
+  //   img.src = URL.createObjectURL(blob);
+  //   img.onload = function() {
+  //     var context = initImageData(imageDataAddr, img.naturalWidth, img.naturalHeight, 0);
+  //     context.drawImage(img, 0, 0);
+  //     URL.revokeObjectURL(img.src);
+  //     return ;
+  //   };
+  //   img.onerror = function(e) {
+  //     URL.revokeObjectURL(img.src);
+  //     ctx.setAsCurrentContext();
+  //     return $.newIllegalArgumentException("error decoding image");
+  //   };
+    
+  // };
+
   Native["javax/microedition/lcdui/ImageDataFactory.createImmutableImageDataRegion.(Ljavax/microedition/lcdui/ImageData;Ljavax/microedition/lcdui/ImageData;IIIIIZ)V"] = function(addr, dataDestAddr, dataSourceAddr, x, y, width, height, transform, isMutable) {
     var context = initImageData(dataDestAddr, width, height, isMutable);
     renderRegion(context, NativeMap.get(dataSourceAddr).context.canvas, x, y, width, height, transform, 0, 0, TOP | LEFT);
@@ -14166,17 +14209,29 @@ var getMobileInfo = new Promise(function(resolve, reject) {
     resolve();
   });
 });
+
+if(config.enginemode)
+  {
+    enginemode=config.enginemode;
+  }
+ 
 if(!isIndex)
 {
   showDownloadScreen();
   var loadingMIDletPromises = [getMobileInfo];
   var loadingPromises = [initFS];
-  loadingPromises.push(load("java/classes.jar", "arraybuffer").then(function(data) {
+  var classedjarname='java/classes.jar';
+  if(enginemode==1){
+    //启用兼容模式
+    classedjarname='java/classesold.jar';
+  }
+  loadingPromises.push(load(classedjarname, "arraybuffer").then(function(data) {
     JARStore.addBuiltIn("java/classes.jar", data);
     CLASSES.initializeBuiltinClasses();
   }));
 } 
 //console.log(config.localjar)
+
 if(!isIndex)
 {
   if(config.localjar )
@@ -14365,6 +14420,8 @@ function start() {
     profile === 1 && profiler.start(2E3, false);
     bigBang = performance.now();
     profile === 2 && startTimeline();
+
+   
     jvm.startIsolate0(config.main, config.args);  
     jvm.startIsolate0(config.main, config.args); 
   }
@@ -14395,7 +14452,8 @@ window.onload = function() {
       } 
 
   Promise.all(loadingPromises).then(start, function(reason) {
-    console.error('Loading failed: "' + reason + '"');
+    console.error('Loading failed: ');
+    console.error(reason);
   });
  
   }); 

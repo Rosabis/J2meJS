@@ -137,15 +137,5 @@ var GameList = [{
     name: "黑神话悟空",
     jarName: "wukong.jar",
     picPath: "img/wukong.png"
-  },
-  {
-    name: "原神",
-    jarName: "GenshinImpact.jar",
-    picPath: "img/GenshinImpact.png"
-  },
-  {
-    name: "都市摩天楼",
-    jarName: "city.jar",
-    picPath: "img/city.png"
   }
 ]
