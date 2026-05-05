@@ -4,7 +4,9 @@
 
 Copyright © 2026  Rosabis & Zixing. All rights reserved.
 
-The software J2meJS, starting from version 2024-04-28, is no longer under the GPL-3.0 License. Instead, all rights to the software are reserved by the owner.
+This software has been registered for software copyright in China. Unauthorized use will be subject to legal liability.
+
+The software J2meJS, starting from version 2024-04-28, is no longer under the GPL-3.0 License. Instead, all rights to the software are reserved by the owner. Any violation of the above terms will be subject to legal action by the rights holder.
 
 The following conditions now apply:
 
