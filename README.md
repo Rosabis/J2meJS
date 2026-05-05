@@ -1,3 +1,4 @@
+[中文说明](readme_zh.md)
 
 ## Copyright Notice
 
@@ -19,3 +20,4 @@ If you accept the agreement, here are two versions of this software:
 
 - [KaiOS version](https://rosabis.github.io/J2meJS/kaios/)
 - [Normal version](https://rosabis.github.io/J2meJS/java/)
+

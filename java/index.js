@@ -215,10 +215,8 @@ if(!isbatch)
     if (islocaljar) {
       href = 'main.html?localjar=' + jarname;
     }
-    if(enginemode.checked)
-    {
-      href+="&enginemode=1";
-    }
+    
+    href+="&enginemode="+enginemode.options[enginemode.selectedIndex].value; 
     /*
     if(mycheck2.checked)
     {
@@ -337,11 +335,11 @@ function alertSuccess(successcount,failcount){
  
 var myconfig = function() {
   var myInfo = {
-    canvasSize: 4,
-    gamepadSize: 0,
+    canvasSize: 0,
+    gamepadSize: 3,
     gameresize: 0,
     gameindex: 0,
-    enginemode: 0 
+    enginemode:1
   };
   if (window.localStorage["my"] === undefined) {
     window.localStorage["my"] = JSON.stringify(myInfo);
@@ -381,7 +379,7 @@ var enginemodeckb = document.getElementById('enginemode');
 canvasSize.selectedIndex = csize;
 gamepadSize.selectedIndex = gsize;
 gameresize.selectedIndex = gresize;
-enginemodeckb.checked = enginemode==1;
+enginemodeckb.selectedIndex = enginemode;
 
 window.addEventListener("load", function() {
 
@@ -390,16 +388,9 @@ window.addEventListener("load", function() {
 
 })
 
-function enginemodeOnclick(checkbox){
-  if ( checkbox.checked == true){
-    
-    config01.setValueByKey("enginemode", 1);
-     
-    }else{
-      
-    config01.setValueByKey("enginemode", 0);
-     
-    }
+function enginemodeOnclick(){
+  var enginemodeckb = document.getElementById('enginemode');
+  config01.setValueByKey("enginemode", enginemodeckb.selectedIndex); 
 } 
 
 function canvasSizeHandleChange(){
