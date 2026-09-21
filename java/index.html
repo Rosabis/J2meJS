@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>j2me在线模拟器</title>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
+		 
+  		<link rel="stylesheet" type="text/css" href="style/index.css">
+		<!-- Required for non-UTF encodings -->
+		<script src="libs/encoding.js"></script>
+		<!-- Load config scripts separately because compiled-method-cache.js
+     - depends on them. -->
+		<script type="text/javascript" src="config/default.js" defer></script>
+		<script type="text/javascript" src="config/runtests.js" defer></script>
+		<script type="text/javascript" src="config/build.js" defer></script>
+		<script type="text/javascript" src="config/urlparams.js" defer></script>
+
+
+		<!--<script type="text/javascript" src="libs/terminal.js" defer></script>-->
+
+		<!-- Load promise-6.0.0.js and IndexedDB-getAll-shim.js separately
+     - because compiled-method-cache.js depends on them. -->
+		<script type="text/javascript" src="libs/promise-6.0.0.js" defer></script>
+		<script type="text/javascript" src="polyfill/IndexedDB-getAll-shim.js" defer></script>
+
+		<!-- Load compiled-method-cache.js separately because j2me.js depends on it. -->
+		<script type="text/javascript" src="libs/compiled-method-cache.js" defer></script>
+
+		<!-- Load bld/native.js separately because adding it to main-all.js
+     - throws an "asm.js type error". -->
+		<script type="text/javascript" src="bld/native.js" defer></script>
+
+		<!-- Load j2me.js separately because classes.jar.js depends on it (it adds
+     - members to the AOTMD hash that j2me.js defines); and also so its source
+     - map gets loaded by the debugger. -->
+		<script type="text/javascript" src="bld/j2me.js" defer></script>
+
+		<!-- Run `make aot` to generate these.  Load them separately, because adding
+     - classes.jar.js to main-all.js fails silently for unknown reasons. -->
+		<!--<script type="text/javascript" src="bld/classes.jar.js" defer></script>-->
+		<!--<script type="text/javascript" src="bld/program.jar.js" defer></script>-->
+		<!--<script type="text/javascript" src="bld/tests.jar.js" defer></script>-->
+
+		<!-- Load the rest of the scripts from the combined script main-all.js
+     - to improve startup and runtime performance.  See Makefile for the list
+     - of files that get combined into this one. -->
+		<script type="text/javascript" src="bld/main-all.js" defer></script>
+
+	</head>
+	<body> 
+		<input id="jarFileupload" accept=".jar" type="file" style="visibility: hidden;display:none;" />
+		
+		<p> <a href="/" style="font-weight: bold"><h3> 回到主页 </h3></a></p>
+
+		<h3>游戏列表：</h3>
+		<div id="gameListDiv"
+			style="display:flex;flex-wrap: wrap; margin-bottom: 10px; float:left;align-items: center;">
+			
+		</div>
+
+		<!-- <label><input id="mycheck2" name="enablexy" type="checkbox" value="" />自适应缩放</label>  -->
+		<div style="margin-top: 100px; clear: both;">
+
+			<select id="canvasSize" class="filter-box" onchange="canvasSizeHandleChange()">
+				<option value="size-240x320">显示尺寸: 240x320</option>
+				<option value="size-320x240">显示尺寸: 320x240</option>
+				<option value="size-128x128">显示尺寸: 128x128</option>
+				<option value="size-176x220">显示尺寸: 176x220</option>
+				
+				<option value="size-240x400">显示尺寸: 240x400</option>
+				<option value="size-400x240">显示尺寸: 400x240</option>
+				<option value="size-360x640">显示尺寸: 360x640</option>
+				<option value="size-640x360">显示尺寸: 640x360</option>
+				<option value="size-480x800">显示尺寸: 480x800</option>
+				<option value="size-800x480">显示尺寸: 800x480</option>
+				<option value="size-no" selected>显示尺寸: 无限制</option>
+			</select>
+			<select id="gamepadSize" class="filter-box" onchange="gamepadSizeHandleChange()">
+				<option value="gamepad-0" selected>虚拟键盘-无</option>
+				<option value="gamepad-1">虚拟键盘-小</option>
+				<option value="gamepad-2">虚拟键盘-中</option>
+				<option value="gamepad-3">虚拟键盘-大</option>
+				<option value="gamepad-4">虚拟键盘-特大</option>
+			</select>
+
+			<select id="gameresize" class="filter-box" onchange="gameresizeHandleChange()">
+				<option value="resize-1" selected>无缩放</option> 
+				<option value="resize-0x5">缩放0.5倍</option>
+				<option value="resize-0x75">缩放0.75倍</option>
+				<option value="resize-1x5">缩放1.5倍</option>
+				<option value="resize-2">缩放2倍</option>
+				<option value="resize-2x5">缩放2.5倍</option>
+				<option value="resize-3">缩放3倍</option>
+			</select>
+			
+			<select id="enginemode" class="filter-box" onchange="enginemodeOnclick()">
+				<option value="enginemode1-classesold.jar" selected>内核1-兼容模式</option> 
+				<option value="enginemode2-classes2.jar">内核2-标准模式</option>
+				<option value="enginemode3-classes.jar">内核3-预览模式</option> 
+			</select> 
+			</br>
+			</br>
+			<select id="localjars" class="filter-box" onchange="localjarsHandleChange()">
+				<option value="" selected>无项目</option>
+			</select>
+			<button class="btn" onclick="openLocalJar()">
+				选择本地jar
+			</button>
+
+			<button class="btn" onclick="loadLocalJar()">
+				运行本地jar
+			</button>
+
+			<button class="btn" onclick="deleteLocalJar()">
+				删除本地jar
+			</button>
+
+			</br>
+			</br>
+			</br>
+			</br>
+			<a href="indexbatch.html" style="float: right;">
+				批量安装版本
+			</a>
+			</br>
+			</br>
+			<a href="updatelog.html" style="float: right;">
+				更新日志
+			</a>
+			</br>
+		</div>
+		<script type="text/javascript" src="gamelist.js"></script>
+		<script type="text/javascript" src="index.js"></script>
+		
+		<script>
+			var _hmt = _hmt || [];
+			(function() {
+				var hm = document.createElement("script");
+				hm.src = "http://hm.baidu.com/hm.js?9940f26304b1f1a1a415df829cd440f3";
+				var s = document.getElementsByTagName("script")[0];
+				s.parentNode.insertBefore(hm, s);
+			})();
+		</script>
+	</body>
+</html>
