@@ -3343,7 +3343,7 @@ var J2ME;
             }
             return interpret(this);
         };
-        Thread.prototype.exceptionUnwind = function (e) {
+        Thread.prototype.exceptionUnwind = function (e) { 
             release || J2ME.traceWriter && J2ME.traceWriter.writeLn("exceptionUnwind: " + toName(e));
             var pc = -1;
             var classInfo;
@@ -5048,9 +5048,9 @@ var J2ME;
                                 address = 0 /* NULL */;
                             }
                             else {
-                                address = i32[sp - calleeMethodInfo.argumentSlots];
+                                address = i32[sp - calleeMethodInfo.argumentSlots]; 
                                 classInfo = (address !== 0 /* NULL */) ? J2ME.classIdToClassInfoMap[i32[address >> 2]] : null;
-                            }
+                            } 
                             if (isStatic) {
                                 thread.classInitAndUnwindCheck(fp, sp, opPC, calleeMethodInfo.classInfo);
                                 if (U) {
@@ -5065,8 +5065,10 @@ var J2ME;
                                 case 184 /* INVOKESTATIC */:
                                     calleeTargetMethodInfo = calleeMethodInfo;
                                     break;
-                                case 182 /* INVOKEVIRTUAL */:
-                                    calleeTargetMethodInfo = classInfo.vTable[calleeMethodInfo.vTableIndex];
+                                case 182 /* INVOKEVIRTUAL */: 
+                                    if(classInfo!=null){
+                                        calleeTargetMethodInfo = classInfo.vTable[calleeMethodInfo.vTableIndex];
+                                    }
                                     break;
                                 case 185 /* INVOKEINTERFACE */:
                                     calleeTargetMethodInfo = classInfo.iTable[calleeMethodInfo.mangledName];
@@ -5074,6 +5076,10 @@ var J2ME;
                                 default:
                                     release || J2ME.traceWriter && J2ME.traceWriter.writeLn("Not Implemented: " + J2ME.Bytecode.getBytecodesName(op));
                                     assert(false, "Not Implemented: " + J2ME.Bytecode.getBytecodesName(op));
+                            }
+                            if(!calleeTargetMethodInfo)
+                            {
+                                continue;
                             }
                             // Call Native or Compiled Method.
                             var callMethod = calleeTargetMethodInfo.isNative || calleeTargetMethodInfo.state === 1 /* Compiled */;
@@ -5200,6 +5206,7 @@ var J2ME;
                                 $.ctx.monitorEnter(J2ME.getMonitor(monitorAddr));
                                 release || assert(U !== 1 /* Yielding */, "Monitors should never yield.");
                                 if (U === 2 /* Pausing */ || U === 3 /* Stopping */) {
+                                    console.log('Pausing or Stopping')
                                     thread.set(fp, sp, opPC);
                                     return;
                                 }
@@ -5226,7 +5233,7 @@ var J2ME;
                         detailMessage=J2ME.fromStringAddr(e.detailMessage);
                     }
                     console.warn("error occurs at : "+e.constructor.prototype.classInfo._name +" detailMessage: "+detailMessage);
-                    console.error(e); 
+                    //console.error(e); 
                 }else{
                     console.error(e);
                 } 
@@ -5307,7 +5314,7 @@ var J2ME;
     /**
      * Turns on caching of JIT-compiled methods.
      */
-    J2ME.enableCompiledMethodCache = true && typeof CompiledMethodCache !== "undefined";
+    
     /**
      * Traces method execution.
      */
@@ -6030,24 +6037,7 @@ var J2ME;
     var frameView = new J2ME.FrameView();
     function findCompiledMethod(methodInfo) {
         return;
-        // Use aotMetaData to find AOT methods instead of jsGlobal because runtime compiled methods may
-        // be on the jsGlobal.
-        //var mangledClassAndMethodName = methodInfo.mangledClassAndMethodName;
-        //if (aotMetaData[mangledClassAndMethodName]) {
-        //  aotMethodCount++;
-        //  methodInfo.onStackReplacementEntryPoints = aotMetaData[methodInfo.mangledClassAndMethodName].osr;
-        //  release || assert(jsGlobal[mangledClassAndMethodName], "function must be present when aotMetaData exists");
-        //  return jsGlobal[mangledClassAndMethodName];
-        //}
-        //if (enableCompiledMethodCache) {
-        //  var cachedMethod;
-        //  if ((cachedMethod = CompiledMethodCache.get(methodInfo.implKey))) {
-        //    cachedMethodCount ++;
-        //    linkMethod(methodInfo, cachedMethod.source, cachedMethod.referencedClasses, cachedMethod.onStackReplacementEntryPoints);
-        //  }
-        //}
-        //
-        //return jsGlobal[mangledClassAndMethodName];
+        
     }
     /**
      * Creates convenience getters / setters on Java objects.
@@ -6259,6 +6249,7 @@ var J2ME;
         J2ME.runtimeCounter && J2ME.runtimeCounter.count("linkMethod");
         var fn;
         var methodType;
+        //console.log(methodInfo)
         var nativeMethod = findNativeMethodImplementation(methodInfo);
         if (nativeMethod) {
             J2ME.linkWriter && J2ME.linkWriter.writeLn("Method: " + methodInfo.name + methodInfo.signature + " -> Native");
@@ -6309,83 +6300,7 @@ var J2ME;
      * Compiles method and links it up at runtime.
      */
     function compileAndLinkMethod(methodInfo) {
-        if (!J2ME.enableRuntimeCompilation) {
-            return;
-        }
-        // Don't do anything if we're past the compiled state.
-        if (methodInfo.state >= 1 /* Compiled */) {
-            return;
-        }
-        // Don't compile if we've compiled too many methods.
-        if (J2ME.maxCompiledMethodCount >= 0 && J2ME.compiledMethodCount >= J2ME.maxCompiledMethodCount) {
-            return;
-        }
-        // Don't compile methods that are too large.
-        if (methodInfo.codeAttribute.code.length > 4000 && !config.forceRuntimeCompilation) {
-            J2ME.jitWriter && J2ME.jitWriter.writeLn("Not compiling: " + methodInfo.implKey + " because it's too large. " + methodInfo.codeAttribute.code.length);
-            methodInfo.state = 2 /* NotCompiled */;
-            J2ME.notCompiledMethodCount++;
-            return;
-        }
-        if (J2ME.enableCompiledMethodCache) {
-            var cachedMethod;
-            if (cachedMethod = CompiledMethodCache.get(methodInfo.implKey)) {
-                J2ME.cachedMethodCount++;
-                J2ME.jitWriter && J2ME.jitWriter.writeLn("Retrieved " + methodInfo.implKey + " from compiled method cache");
-                var referencedClasses = [];
-                // Ensure referenced classes are loaded.
-                // We only need to do this for cached methods, since referenced classes
-                // get loaded automatically during JIT compilation.
-                for (var i = 0; i < cachedMethod.referencedClasses.length; i++) {
-                    referencedClasses.push(J2ME.CLASSES.getClass(cachedMethod.referencedClasses[i]));
-                }
-                linkMethodSource(methodInfo, cachedMethod.args, cachedMethod.body, referencedClasses, cachedMethod.onStackReplacementEntryPoints);
-                return;
-            }
-        }
-        var mangledClassAndMethodName = methodInfo.mangledClassAndMethodName;
-        J2ME.jitWriter && J2ME.jitWriter.enter("Compiling: " + J2ME.compiledMethodCount + " " + methodInfo.implKey + ", interpreterCallCount: " + methodInfo.stats.interpreterCallCount + " backwardsBranchCount: " + methodInfo.stats.backwardsBranchCount + " currentBytecodeCount: " + methodInfo.stats.bytecodeCount);
-        var s = performance.now();
-        var compiledMethod;
-        enterTimeline("Compiling");
-        try {
-            compiledMethod = J2ME.baselineCompileMethod(methodInfo, J2ME.enableCompiledMethodCache ? 1 /* Static */ : 0 /* Runtime */);
-            J2ME.compiledMethodCount++;
-        }
-        catch (e) {
-            methodInfo.state = 3 /* CannotCompile */;
-            J2ME.jitWriter && J2ME.jitWriter.writeLn("Cannot compile: " + methodInfo.implKey + " because of " + e);
-            leaveTimeline("Compiling");
-            return;
-        }
-        leaveTimeline("Compiling");
-        if (J2ME.codeWriter) {
-            J2ME.codeWriter.writeLn("// Method: " + methodInfo.implKey);
-            J2ME.codeWriter.writeLn("// Arguments: " + compiledMethod.args.join(", "));
-            J2ME.codeWriter.writeLn("// Referenced Classes: ");
-            for (var i = 0; i < compiledMethod.referencedClasses.length; i++) {
-                J2ME.codeWriter.writeLn("// " + i + ": " + compiledMethod.referencedClasses[i].getClassNameSlow());
-            }
-            J2ME.codeWriter.writeLns(compiledMethod.body);
-        }
-        if (J2ME.enableCompiledMethodCache) {
-            CompiledMethodCache.put({
-                key: methodInfo.implKey,
-                args: compiledMethod.args,
-                body: compiledMethod.body,
-                referencedClasses: compiledMethod.referencedClasses.map(function (v) { return v.getClassNameSlow(); }),
-                onStackReplacementEntryPoints: compiledMethod.onStackReplacementEntryPoints
-            });
-        }
-        linkMethodSource(methodInfo, compiledMethod.args, compiledMethod.body, compiledMethod.referencedClasses, compiledMethod.onStackReplacementEntryPoints);
-        var methodJITTime = (performance.now() - s);
-        totalJITTime += methodJITTime;
-        if (J2ME.jitWriter) {
-            J2ME.jitWriter.leave("Compilation Done: " + methodJITTime.toFixed(2) + " ms, " +
-                "codeSize: " + methodInfo.codeAttribute.code.length + ", " +
-                "sourceSize: " + compiledMethod.body.length);
-            J2ME.jitWriter.writeLn("Total: " + totalJITTime.toFixed(2) + " ms");
-        }
+        return; 
     }
     J2ME.compileAndLinkMethod = compileAndLinkMethod;
     function wrapMethod(fn, methodInfo, methodType) {
@@ -8503,68 +8418,83 @@ var J2ME;
         };
         ClassInfo.prototype.complete = function () {
             this.createAbstractMethods();
-            //if (!this.isInterface) {
+            if (!this.isInterface) {
                 this.buildVTable();
                 this.buildITable();
                 this.buildFTable();
-            //}
+            }
             // Notify the runtime so it can perform and necessary setup.
             if (J2ME.RuntimeTemplate) {
                 J2ME.RuntimeTemplate.classInfoComplete(this);
             }
             J2ME.loadWriter && this.trace(J2ME.loadWriter);
         };
-        /**
-         * Constructs the VTable for this class by appending to or overriding methods
-         * in the super class VTable.
-         */
+        
         ClassInfo.prototype.buildVTable = function () {
-            var superClassVTable = this.superClass ? this.superClass.vTable : null;
-            var vTable = this.vTable = superClassVTable ? superClassVTable.slice() : [];
-            var vTableMap = this.vTableMap = new Uint16Array(hashMapSizeMask + 1);
-            var superClassVTableMap = null;
-            if (this.superClass) {
-                superClassVTableMap = this.superClass.vTableMap;
+            // 获取父类VTable
+            const superClassVTable = this.superClass ? this.superClass.vTable : null;
+            const superClassVTableMap = this.superClass ? this.superClass.vTableMap : null;
+        
+            // 初始化VTable
+            const vTable = this.vTable = superClassVTable ? superClassVTable.slice() : [];
+            const vTableMap = this.vTableMap = new Uint16Array(hashMapSizeMask + 1);
+            
+            // 继承父类的vTableMap
+            if (superClassVTableMap) {
                 vTableMap.set(superClassVTableMap);
             }
-            var methods = this.methods;
-            if (!methods) {
+        
+            // 如果没有方法，直接返回
+            if (!this.methods) {
                 return;
             }
-            for (var i = 0; i < methods.length; i++) {
-                var methodInfo = this.getMethodByIndex(i);
+        
+            // 处理当前类的方法
+            for (let i = 0; i < this.methods.length; i++) {
+                const methodInfo = this.getMethodByIndex(i);
+                
+                // 忽略静态方法和构造函数
                 if (!methodInfo.isStatic && !strcmp(methodInfo.utf8Name, UTF8.Init)) {
-                    var vTableIndex = -1;
+                    let vTableIndex = -1;
+        
+                    // 尝试从父类VTable中找到方法
                     if (superClassVTable) {
                         vTableIndex = getHashMapValue(superClassVTableMap, methodInfo.utf8Name) - 1;
                         if (vTableIndex >= 0) {
                             vTableIndex = indexOfMethod(superClassVTable, methodInfo.utf8Name, methodInfo.utf8Signature, vTableIndex);
                         }
                     }
+        
+                    // 如果方法没有在父类中找到，追加到VTable，否则覆盖
                     if (vTableIndex < 0) {
                         methodInfo.vTableIndex = vTable.length;
                         vTable.push(methodInfo); // Append
                         setHashMapValue(vTableMap, methodInfo.utf8Name, methodInfo.vTableIndex + 1);
-                    }
-                    else {
+                    } else {
                         vTable[vTableIndex] = methodInfo; // Override
                         methodInfo.vTableIndex = vTableIndex;
                     }
                 }
             }
-            // Go through all the interfaces and mark all methods in the vTable that implement interface methods.
-            var interfaces = this.getAllInterfaces();
-            for (var i = 0; i < interfaces.length; i++) {
-                var c = interfaces[i];
-                for (var j = 0; j < c.methods.length; j++) {
-                    var methodInfo = c.getMethodByIndex(j);
-                    var vTableIndex = indexOfMethod(this.vTable, methodInfo.utf8Name, methodInfo.utf8Signature, -1);
+        
+            // 处理接口方法
+            const interfaces = this.getAllInterfaces();
+            for (let i = 0; i < interfaces.length; i++) {
+                const interfaceClass = interfaces[i];
+        
+                for (let j = 0; j < interfaceClass.methods.length; j++) {
+                    const methodInfo = interfaceClass.getMethodByIndex(j);
+                    const vTableIndex = indexOfMethod(this.vTable, methodInfo.utf8Name, methodInfo.utf8Signature, -1);
+        
                     if (vTableIndex >= 0) {
+                        // 标记实现接口方法
                         this.vTable[vTableIndex].accessFlags |= 65536 /* J2ME_IMPLEMENTS_INTERFACE */;
                     }
                 }
             }
         };
+
+        
         ClassInfo.prototype.buildITable = function () {
             var vTable = this.vTable;
             var iTable = this.iTable;
