@@ -1,1 +1,30 @@
+/*
+ * J2meJS - a Java ME emulator implemented in JavaScript.
+ * Copyright (C) 2026 Rosabis & Zixing
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; version 2 of the License only.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, see <https://www.gnu.org/licenses/>.
+ * 
+ * Network use and the source code obligation:
+ * J2meJS is a purely client-side application. The browser downloads the full
+ * program and data into local storage (including IndexedDB) and runs everything
+ * on the user's own device; no program code is executed on the server. Serving
+ * a modified build from any web server therefore delivers a full, runnable copy
+ * to every visitor and constitutes distribution under the GNU General Public
+ * License version 2. As required by Sections 2(b) and 3 of that License, you
+ * must make the complete corresponding source code of your modified version
+ * available to every recipient at no charge. This restates existing License
+ * terms and is not an additional restriction; neither network deployment nor
+ * storage in IndexedDB exempts you from this obligation.
+ */
+
 export var SIZEOF_ADL_OPERATOR=5;export var SIZEOF_ADL_INSTRUMENT=40;export var SIZEOF_ADL_BANK=12;export var SIZEOF_ADL_BANK_ID=4;export var OPERATOR_OFFSET=14;export function decodeOperator(e){var t=e[0],o=e[1],r=e[2],n=e[3];return{am:!!(128&t),vibrato:!!(64&t),sustaining:!!(32&t),ksr:!!(16&t),freqMult:15&t,keyScaleLevel:o>>6&3,totalLevel:63&o,attack:r>>4&15,decay:15&r,sustain:n>>4&15,release:15&n,waveform:7&e[4]}}export function encodeOperator(e){var t=(e.am?128:0)|(e.vibrato?64:0)|(e.sustaining?32:0)|(e.ksr?16:0)|15&e.freqMult,o=(3&e.keyScaleLevel)<<6|63&e.totalLevel,r=(15&e.attack)<<4|15&e.decay,n=(15&e.sustain)<<4|15&e.release,O=7&e.waveform;return new Uint8Array([t,o,r,n,O])}export function defaultOperator(){return{am:!1,vibrato:!1,sustaining:!0,ksr:!1,freqMult:1,keyScaleLevel:0,totalLevel:63,attack:15,decay:0,sustain:0,release:15,waveform:0}}export function decodeInstrument(e){var t=new DataView(e.buffer,e.byteOffset,SIZEOF_ADL_INSTRUMENT),o=t.getInt32(0,!0),r=t.getInt16(4,!0),n=t.getInt16(6,!0),O=t.getInt8(8),a=t.getInt8(9),s=e[10],i=e[11],c=e[12],f=e[13];return{version:o,noteOffset1:r,noteOffset2:n,velocityOffset:O,secondVoiceDetune:a,percussionKey:s,is4op:!!(1&i),isPseudo4op:!!(2&i),isBlank:!!(4&i),rhythmMode:i>>3&7,feedback1:c>>1&7,connection1:1&c,feedback2:f>>1&7,connection2:1&f,operators:[decodeOperator(e.slice(OPERATOR_OFFSET,OPERATOR_OFFSET+SIZEOF_ADL_OPERATOR)),decodeOperator(e.slice(OPERATOR_OFFSET+SIZEOF_ADL_OPERATOR,OPERATOR_OFFSET+2*SIZEOF_ADL_OPERATOR)),decodeOperator(e.slice(OPERATOR_OFFSET+2*SIZEOF_ADL_OPERATOR,OPERATOR_OFFSET+3*SIZEOF_ADL_OPERATOR)),decodeOperator(e.slice(OPERATOR_OFFSET+3*SIZEOF_ADL_OPERATOR,OPERATOR_OFFSET+4*SIZEOF_ADL_OPERATOR))],delayOnMs:t.getUint16(34,!0),delayOffMs:t.getUint16(36,!0)}}export function encodeInstrument(e){var t=new Uint8Array(SIZEOF_ADL_INSTRUMENT),o=new DataView(t.buffer);o.setInt32(0,e.version||0,!0),o.setInt16(4,e.noteOffset1||0,!0),o.setInt16(6,e.noteOffset2||0,!0),o.setInt8(8,e.velocityOffset||0),o.setInt8(9,e.secondVoiceDetune||0),t[10]=e.percussionKey||0;var r=0;e.is4op&&(r|=1),e.isPseudo4op&&(r|=2),e.isBlank&&(r|=4),r|=(7&(e.rhythmMode||0))<<3,t[11]=r,t[12]=(7&(e.feedback1||0))<<1|1&(e.connection1||0),t[13]=(7&(e.feedback2||0))<<1|1&(e.connection2||0);for(var n=0;n<4;n++){var O,a=encodeOperator((null===(O=e.operators)||void 0===O?void 0:O[n])||defaultOperator());t.set(a,OPERATOR_OFFSET+n*SIZEOF_ADL_OPERATOR)}return o.setUint16(34,e.delayOnMs||0,!0),o.setUint16(36,e.delayOffMs||0,!0),t}export function defaultInstrument(){return{version:0,noteOffset1:0,noteOffset2:0,velocityOffset:0,secondVoiceDetune:0,percussionKey:0,is4op:!1,isPseudo4op:!1,isBlank:!0,rhythmMode:0,feedback1:0,connection1:0,feedback2:0,connection2:0,operators:[defaultOperator(),defaultOperator(),defaultOperator(),defaultOperator()],delayOnMs:0,delayOffMs:0}}

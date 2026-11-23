@@ -1,1 +1,30 @@
+/*
+ * J2meJS - a Java ME emulator implemented in JavaScript.
+ * Copyright (C) 2026 Rosabis & Zixing
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; version 2 of the License only.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, see <https://www.gnu.org/licenses/>.
+ * 
+ * Network use and the source code obligation:
+ * J2meJS is a purely client-side application. The browser downloads the full
+ * program and data into local storage (including IndexedDB) and runs everything
+ * on the user's own device; no program code is executed on the server. Serving
+ * a modified build from any web server therefore delivers a full, runnable copy
+ * to every visitor and constitutes distribution under the GNU General Public
+ * License version 2. As required by Sections 2(b) and 3 of that License, you
+ * must make the complete corresponding source code of your modified version
+ * available to every recipient at no charge. This restates existing License
+ * terms and is not an additional restriction; neither network deployment nor
+ * storage in IndexedDB exempts you from this obligation.
+ */
+
 export var Emulator=Object.freeze({NUKED:0,NUKED_174:1,DOSBOX:2,OPAL:3,JAVA:4,ESFMu:5,MAME_OPL2:6,YMFM_OPL2:7,YMFM_OPL3:8,NUKED_OPL2_LLE:9,NUKED_OPL3_LLE:10,NUKED_OPL2_LITE:11});export var TrackOption=Object.freeze({ON:1,OFF:2,SOLO:3});
