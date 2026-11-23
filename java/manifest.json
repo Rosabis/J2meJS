@@ -1,0 +1,27 @@
+{
+  "name": "J2ME在线模拟器",
+  "short_name": "J2ME",
+  "description": "在线运行经典J2ME/Java游戏",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#3482FF",
+  "background_color": "#F5F5F5",
+  "icons": [
+    {
+      "src": "img/anyview.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

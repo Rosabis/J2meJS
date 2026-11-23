@@ -1,0 +1,1 @@
+export var Emulator=Object.freeze({NUKED:0,NUKED_174:1,DOSBOX:2,OPAL:3,JAVA:4,ESFMu:5,MAME_OPL2:6,YMFM_OPL2:7,YMFM_OPL3:8,NUKED_OPL2_LLE:9,NUKED_OPL3_LLE:10,NUKED_OPL2_LITE:11});export var TrackOption=Object.freeze({ON:1,OFF:2,SOLO:3});

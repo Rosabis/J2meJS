@@ -3,90 +3,810 @@
 
 <head>
   <meta charset="UTF-8">
-  <link rel="stylesheet" type="text/css" href="style/main.css">
-  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1"> 
-  <!-- Required for non-UTF encodings --> 
-  <script src="libs/encoding.js"></script>
-  
-   <!-- Required for mid -->
-	<script src="./libs/webaudio-tinysynth.min.js" type="text/javascript"></script> 
+  <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,viewport-fit=cover"> 
+  <script type="text/javascript" src="js/gamepadHandlerWithRightStick.js"></script>
+  <!-- 阻止 iOS 页面拖动 -->
+  <script>
+    // 阻止 iOS Safari 的橡皮筋滚动效果
+    document.addEventListener('touchmove', function (e) {
+      // 允许在可交互元素上滚动（如输入框、对话框等）
+      var target = e.target;
+      while (target && target !== document.body) {
+        if (target.scrollHeight > target.clientHeight ||
+          target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.contentEditable === 'true' ||
+          target.classList.contains('text-editor') ||
+          target.closest('form[role="dialog"]')) {
+          return; // 允许这些元素滚动
+        }
+        target = target.parentElement;
+      }
+      // 阻止其他地方的滚动
+      e.preventDefault();
+    }, { passive: false });
 
-  <!-- Required for amr -->
-	<script src="./libs/BenzAMRRecorder.min.js" type="text/javascript"></script> 
- 
-  <script type="text/javascript" src="bld/native.js" defer></script>
-  <script type="text/javascript" src="config/default.js" defer></script>
-  <script type="text/javascript" src="config/runtests.js" defer></script>
-  <script type="text/javascript" src="config/build.js" defer></script>
-  <script type="text/javascript" src="config/urlparams.js" defer></script>
+    // 阻止双击缩放
+    var lastTouchEnd = 0;
+    document.addEventListener('touchend', function (e) {
+      var now = Date.now();
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+  </script>
 
-  <script type="text/javascript" src="bld/j2me.js" defer></script>
-  
-  <script type="text/javascript" src="bld/main-all.js" defer></script>
-  
-  <script type="text/javascript" src="keymap.js"></script>
-  
+  <script type="text/javascript" src="js/evalNative-bridge.js"></script>
+  <script type="text/javascript" src="js/load-versioned.js"></script>
+  <!-- FOUC：main.css 异步到达前；首屏固定为下载层（图2），键盘到 MIDlet 前台后再显示 -->
+  <style>
+    #startup-loader {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      color: #4f5965;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity .35s ease, visibility .35s ease;
+    }
+
+    #startup-loader.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    #startup-loader .loader-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 26px;
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    #startup-loader .loader-word {
+      --loader-char-size: clamp(20px, 7.6vw, 64px);
+      --loader-char-gap: clamp(3px, 1.4vw, 10px);
+      display: flex;
+      gap: var(--loader-char-gap);
+      align-items: center;
+      justify-content: center;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+      max-width: 96vw;
+    }
+
+    #startup-loader .loader-char {
+      width: var(--loader-char-size);
+      height: var(--loader-char-size);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: #59616c;
+      color: #ffffff;
+      font-size: calc(var(--loader-char-size) * 0.68);
+      font-weight: 700;
+      line-height: 1;
+      --loader-bounce: calc(var(--loader-char-size) * 0.18);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+      animation: startup-bounce 1.05s ease-in-out infinite;
+    }
+
+    #startup-loader .loader-char:nth-child(1) {
+      animation-delay: .00s;
+      transform: rotate(-10deg);
+      color: #6fd8f2;
+    }
+
+    #startup-loader .loader-char:nth-child(2) {
+      animation-delay: .08s;
+      transform: rotate(-10deg);
+      color: #6fd8f2;
+    }
+
+    #startup-loader .loader-char:nth-child(3) {
+      animation-delay: .16s;
+    }
+
+    #startup-loader .loader-char:nth-child(4) {
+      animation-delay: .24s;
+    }
+
+    #startup-loader .loader-char:nth-child(5) {
+      animation-delay: .32s;
+    }
+
+    #startup-loader .loader-char:nth-child(6) {
+      animation-delay: .40s;
+    }
+
+    #startup-loader .loader-char:nth-child(7) {
+      animation-delay: .48s;
+    }
+
+    #startup-loader .loader-char:nth-child(8) {
+      animation-delay: .56s;
+    }
+
+    #startup-loader .loader-subtitle {
+      font-size: 36px;
+      font-weight: 600;
+      letter-spacing: .01em;
+      color: #5b646e;
+      line-height: 1.1;
+      text-align: center;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      #startup-loader {
+        background: #111318;
+        color: #d7dce4;
+      }
+
+      #startup-loader .loader-char {
+        background: #4f5561;
+        color: #f2f4f8;
+      }
+
+      #startup-loader .loader-char:nth-child(1),
+      #startup-loader .loader-char:nth-child(2) {
+        color: #7be4ff;
+      }
+
+      #startup-loader .loader-subtitle {
+        color: #c6ccd6;
+      }
+    }
+
+    @keyframes startup-bounce {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(calc(-1 * var(--loader-bounce, 12px)));
+      }
+    }
+
+    .screen {
+      display: none;
+    }
+
+    #download-screen.screen.screen-canvas-overlay {
+      display: flex !important;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 5;
+      box-sizing: border-box;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.92);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      #download-screen.screen.screen-canvas-overlay {
+        background: rgba(28, 28, 30, 0.92);
+      }
+    }
+
+    #keypad {
+      visibility: hidden;
+    }
+
+    /* From Uiverse.io by BlackisPlay */
+    #ghost {
+      position: relative;
+      scale: 0.8;
+    }
+
+    #red {
+      animation: upNDown infinite 0.5s;
+      position: relative;
+      width: 120px;
+      height: 120px;
+      display: grid;
+      grid-template-columns: repeat(14, 1fr);
+      grid-template-rows: repeat(14, 1fr);
+      grid-column-gap: 0px;
+      grid-row-gap: 0px;
+      grid-template-areas:
+        "a1  a2  a3  a4  a5  top0  top0  top0  top0  a10 a11 a12 a13 a14"
+        "b1  b2  b3  top1 top1 top1 top1 top1 top1 top1 top1 b12 b13 b14"
+        "c1 c2 top2 top2 top2 top2 top2 top2 top2 top2 top2 top2 c13 c14"
+        "d1 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 d14"
+        "e1 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 e14"
+        "f1 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 f14"
+        "top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4"
+        "top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4"
+        "top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4"
+        "top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4"
+        "top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4"
+        "top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4"
+        "st0 st0 an4 st1 an7 st2 an10 an10 st3 an13 st4 an16 st5 st5"
+        "an1 an2 an3 an5 an6 an8 an9 an9 an11 an12 an14 an15 an17 an18";
+    }
+
+    @keyframes upNDown {
+
+      0%,
+      49% {
+        transform: translateY(0px);
+      }
+
+      50%,
+      100% {
+        transform: translateY(-10px);
+      }
+    }
+
+    #top0,
+    #top1,
+    #top2,
+    #top3,
+    #top4,
+    #st0,
+    #st1,
+    #st2,
+    #st3,
+    #st4,
+    #st5 {
+      background-color: red;
+    }
+
+    #top0 {
+      grid-area: top0;
+    }
+
+    #top1 {
+      grid-area: top1;
+    }
+
+    #top2 {
+      grid-area: top2;
+    }
+
+    #top3 {
+      grid-area: top3;
+    }
+
+    #top4 {
+      grid-area: top4;
+    }
+
+    #st0 {
+      grid-area: st0;
+    }
+
+    #st1 {
+      grid-area: st1;
+    }
+
+    #st2 {
+      grid-area: st2;
+    }
+
+    #st3 {
+      grid-area: st3;
+    }
+
+    #st4 {
+      grid-area: st4;
+    }
+
+    #st5 {
+      grid-area: st5;
+    }
+
+    #an1 {
+      grid-area: an1;
+      animation: flicker0 infinite 0.5s;
+    }
+
+    #an18 {
+      grid-area: an18;
+      animation: flicker0 infinite 0.5s;
+    }
+
+    #an2 {
+      grid-area: an2;
+      animation: flicker1 infinite 0.5s;
+    }
+
+    #an17 {
+      grid-area: an17;
+      animation: flicker1 infinite 0.5s;
+    }
+
+    #an3 {
+      grid-area: an3;
+      animation: flicker1 infinite 0.5s;
+    }
+
+    #an16 {
+      grid-area: an16;
+      animation: flicker1 infinite 0.5s;
+    }
+
+    #an4 {
+      grid-area: an4;
+      animation: flicker1 infinite 0.5s;
+    }
+
+    #an15 {
+      grid-area: an15;
+      animation: flicker1 infinite 0.5s;
+    }
+
+    #an6 {
+      grid-area: an6;
+      animation: flicker0 infinite 0.5s;
+    }
+
+    #an12 {
+      grid-area: an12;
+      animation: flicker0 infinite 0.5s;
+    }
+
+    #an7 {
+      grid-area: an7;
+      animation: flicker0 infinite 0.5s;
+    }
+
+    #an13 {
+      grid-area: an13;
+      animation: flicker0 infinite 0.5s;
+    }
+
+    #an9 {
+      grid-area: an9;
+      animation: flicker1 infinite 0.5s;
+    }
+
+    #an10 {
+      grid-area: an10;
+      animation: flicker1 infinite 0.5s;
+    }
+
+    #an8 {
+      grid-area: an8;
+      animation: flicker0 infinite 0.5s;
+    }
+
+    #an11 {
+      grid-area: an11;
+      animation: flicker0 infinite 0.5s;
+    }
+
+    @keyframes flicker0 {
+
+      0%,
+      49% {
+        background-color: red;
+      }
+
+      50%,
+      100% {
+        background-color: transparent;
+      }
+    }
+
+    @keyframes flicker1 {
+
+      0%,
+      49% {
+        background-color: transparent;
+      }
+
+      50%,
+      100% {
+        background-color: red;
+      }
+    }
+
+    #eye {
+      width: 40px;
+      height: 50px;
+      position: absolute;
+      top: 30px;
+      left: 10px;
+    }
+
+    #eye::before {
+      content: "";
+      background-color: white;
+      width: 20px;
+      height: 50px;
+      transform: translateX(10px);
+      display: block;
+      position: absolute;
+    }
+
+    #eye::after {
+      content: "";
+      background-color: white;
+      width: 40px;
+      height: 30px;
+      transform: translateY(10px);
+      display: block;
+      position: absolute;
+    }
+
+    #eye1 {
+      width: 40px;
+      height: 50px;
+      position: absolute;
+      top: 30px;
+      right: 30px;
+    }
+
+    #eye1::before {
+      content: "";
+      background-color: white;
+      width: 20px;
+      height: 50px;
+      transform: translateX(10px);
+      display: block;
+      position: absolute;
+    }
+
+    #eye1::after {
+      content: "";
+      background-color: white;
+      width: 40px;
+      height: 30px;
+      transform: translateY(10px);
+      display: block;
+      position: absolute;
+    }
+
+    #pupil {
+      width: 20px;
+      height: 20px;
+      background-color: blue;
+      position: absolute;
+      top: 50px;
+      left: 10px;
+      z-index: 1;
+      animation: eyesMovement infinite 3s;
+    }
+
+    #pupil1 {
+      width: 20px;
+      height: 20px;
+      background-color: blue;
+      position: absolute;
+      top: 50px;
+      right: 50px;
+      z-index: 1;
+      animation: eyesMovement infinite 3s;
+    }
+
+    @keyframes eyesMovement {
+
+      0%,
+      49% {
+        transform: translateX(0px);
+      }
+
+      50%,
+      99% {
+        transform: translateX(10px);
+      }
+
+      100% {
+        transform: translateX(0px);
+      }
+    }
+
+    #shadow {
+      background-color: black;
+      width: 140px;
+      height: 140px;
+      position: absolute;
+      border-radius: 50%;
+      transform: rotateX(80deg);
+      filter: blur(20px);
+      top: 80%;
+      animation: shadowMovement infinite 0.5s;
+    }
+
+    @keyframes shadowMovement {
+
+      0%,
+      49% {
+        opacity: 0.5;
+      }
+
+      50%,
+      100% {
+        opacity: 0.2;
+      }
+    }
+  </style>
+  <script>
+    window.hideStartupLoader = function () {
+      var loader = document.getElementById('startup-loader');
+      if (!loader || loader.classList.contains('is-hidden')) return;
+      loader.classList.add('is-hidden');
+      setTimeout(function () {
+        if (loader && loader.parentNode) loader.parentNode.removeChild(loader);
+      }, 420);
+    };
+  </script>
+
 </head>
 
-<body>
-  <input id="File" type="file" style="visibility: hidden;display:none;"> </input>
+<body class="player-body">
+  <div id="startup-loader" aria-live="polite" aria-label="页面加载中" data-i18n-aria="page.loading">
+    <div class="loader-inner">
+			<div id="ghost">
+				<div id="red">
+					<div id="pupil"></div>
+					<div id="pupil1"></div>
+					<div id="eye"></div>
+					<div id="eye1"></div>
+					<div id="top0"></div>
+					<div id="top1"></div>
+					<div id="top2"></div>
+					<div id="top3"></div>
+					<div id="top4"></div>
+					<div id="st0"></div>
+					<div id="st1"></div>
+					<div id="st2"></div>
+					<div id="st3"></div>
+					<div id="st4"></div>
+					<div id="st5"></div>
+					<div id="an1"></div>
+					<div id="an2"></div>
+					<div id="an3"></div>
+					<div id="an4"></div>
+					<div id="an5"></div>
+					<div id="an6"></div>
+					<div id="an7"></div>
+					<div id="an8"></div>
+					<div id="an9"></div>
+					<div id="an10"></div>
+					<div id="an11"></div>
+					<div id="an12"></div>
+					<div id="an13"></div>
+					<div id="an14"></div>
+					<div id="an15"></div>
+					<div id="an16"></div>
+					<div id="an17"></div>
+					<div id="an18"></div>
+				</div>
+				<div id="shadow"></div>
+			</div>
+
+
+			<div class="loader-subtitle">Loading...</div>
+
+		</div>
+  </div>
+  <input id="File" type="file" style="visibility: hidden;display:none;"> 
+  <input id="importSaveFile" type="file" accept=".zip" style="visibility: hidden;display:none;"> 
+
+  <header class="player-bar" aria-label="模拟器控制栏" data-i18n-aria="player.bar">
+    <button class="player-icon-button" id="player-back" type="button" title="返回程序库" aria-label="返回程序库" data-i18n-title="player.back" data-i18n-aria="player.back">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <div class="player-title" id="player-title">J2ME</div>
+    <div class="player-fps" id="player-fps" aria-live="polite">0 FPS</div>
+    <select class="player-speed" id="player-speed" title="运行倍速" aria-label="运行倍速" data-i18n-title="player.speed" data-i18n-aria="player.speed">
+      <option value="0.5">0.5×</option>
+      <option value="0.75">0.75×</option>
+      <option value="1" selected="selected">1×</option>
+      <option value="1.5">1.5×</option>
+      <option value="2">2×</option>
+      <option value="3">3×</option>
+      <option value="4">4×</option>
+      <option value="6">6×</option>
+      <option value="8">8×</option>
+      <option value="12">12×</option>
+      <option value="16">16×</option>
+    </select>
+    <button class="player-icon-button" id="player-rotate-left" type="button" title="向左旋转" aria-label="向左旋转" data-i18n-title="player.rotateLeft" data-i18n-aria="player.rotateLeft">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v6h6"/><path d="M3.7 15a9 9 0 1 0 2.1-9.4L3 8"/></svg>
+    </button>
+    <button class="player-icon-button" id="player-rotate-right" type="button" title="向右旋转" aria-label="向右旋转" data-i18n-title="player.rotateRight" data-i18n-aria="player.rotateRight">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 3v6h-6"/><path d="M20.3 15a9 9 0 1 1-2.1-9.4L21 8"/></svg>
+    </button>
+    <button class="player-icon-button" id="player-toggle-keypad" type="button" title="隐藏虚拟键盘" aria-label="隐藏虚拟键盘" data-i18n-title="player.hideKeypad" data-i18n-aria="player.hideKeypad" aria-pressed="true">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg>
+    </button>
+    <button class="player-icon-button" id="player-toggle-fullscreen" type="button" title="进入全屏" aria-label="进入全屏" data-i18n-title="player.enterFs" data-i18n-aria="player.enterFs" aria-pressed="false">
+      <svg class="icon-fullscreen-enter" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+      <svg class="icon-fullscreen-exit" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3v3a2 2 0 0 1-2 2H3M16 3v3a2 2 0 0 0 2 2h3M8 21v-3a2 2 0 0 0-2-2H3M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+    </button>
+  </header>
+
+  <main class="player-stage" id="player-stage">
   <div id="display-container">
     <div id="display">
-      <div id="header"></div>
-      <canvas id="canvas"></canvas> 
-      <div id="download-screen" class="screen">
-        <h1 class="title">Downloading midlet…</h1>
-        <div class="download-progress-container">
-          <progress class="pack-activity" id="download-bar" value="0" max="100"></progress>
+      <section id="sidebar" data-type="sidebar" style="display:none">
+        <header>
+          <h1>Menu</h1>
+        </header>
+        <nav>
+          <ul>
+            <li><a href="#" id="export-save-btn">导出存档</a></li>
+            <li><a href="#" id="import-save-btn">导入存档</a></li>
+          </ul>
+        </nav>
+      </section>
+      <section id="drawer" role="region">
+        <header style="display:none">
+          <a href="#"><span class="icon icon-menu">hide sidebar</span></a>
+          <a id="header-drawer-button" href="#drawer"><span class="icon icon-menu">show sidebar</span></a>
+          <menu id="header-ok-button" type="toolbar" style="display:none"><button>√</button></menu>
+          <h1 id="display_title"></h1>
+          <div id="display_ticker" class="ticker" style="display:none"></div>
+        </header>
+        <div id="main" role="main">
+          <canvas id="canvas"></canvas>
+          <div id="download-screen" class="screen screen-canvas-overlay loading-overlay">
+            <div class="loading-overlay-card">
+              <h1 class="title loading-overlay-title">Downloading midlet…</h1>
+              <div class="loading-progress-container">
+                <progress class="loading-progress-bar" value="0" max="100"></progress>
+              </div>
+            </div>
+          </div>
+          <div id="splash-screen" class="screen screen-canvas-overlay loading-overlay">
+            <div class="loading-overlay-card">
+              <h1 class="title loading-overlay-title">Starting midlet…</h1>
+              <div class="loading-progress-container">
+                <progress class="loading-progress-bar loading-progress-bar--indeterminate" max="100"></progress>
+              </div>
+            </div>
+          </div>
+          <div id="midlet-selector-screen" class="screen screen-canvas-overlay loading-overlay loading-overlay--selector">
+            <div class="midlet-selector-card">
+              <h1 class="midlet-selector-title">选择应用</h1>
+              <div class="midlet-selector-list" role="listbox" aria-label="应用列表" data-i18n-aria="player.midlets"></div>
+            </div>
+          </div>
+          <div id="main2" style="display: none;">
+            <input id="password-editor" class="text-editor" type="password">
+            <input id="tel-editor" class="text-editor" type="tel">
+            <input id="number-editor" class="text-editor" type="number">
+            <input id="email-editor" class="text-editor" type="email">
+            <input id="url-editor" class="text-editor" type="url">
+            <div id="textarea-editor" class="text-editor" contenteditable="true"></div>
+            <!-- The hidden textarea editor is used to measure the content height -->
+            <div id="hidden-textarea-editor" class="text-editor"></div>
+            <button id="back-button">Back</button>
+          </div>
         </div>
-      </div>
-
-      <div id="splash-screen" class="screen">
-        <h1 class="title">Starting midlet…</h1>
-        <div class="splash-progress-container">
-          <progress></progress>
-        </div>
-      </div>
+      </section>
 
       <div id="exit-screen" class="screen">
       </div>
 
       <div id="background-screen">
-      </div>  
-   </div> 
- </div> 
+      </div>
 
- <div id="keypad" class="row-reverse"  onselectstart ='return false' οnselect='document.selection.empty()' >
-  <div id="joypad">
-    <button id="choice" class="key">&nbsp;</button>
-    <button id="up" class="key">↑</button>
-    <button id="back" class="key">&nbsp;</button><br>
-    <button id="left" class="key">←</button>
-    <button id="ok" class="key">&nbsp;</button>
-    <button id="right" class="key">→</button><br>
-    <button id="down" class="key">↓</button>
-  </div>
-  <div id="numpad">
-    <button id="num1" class="key">1</button>
-    <button id="num2" class="key">2</button>
-    <button id="num3" class="key">3</button>
-    <button id="star" class="key numpad2">*</button>
-    <br>
-    <button id="num4" class="key">4</button>
-    <button id="num5" class="key">5</button>
-    <button id="num6" class="key">6</button>
-    <button id="num0" class="key numpad2">0</button>
-    <br>
-    <button id="num7" class="key">7</button>
-    <button id="num8" class="key">8</button>
-    <button id="num9" class="key">9</button>
-    <button id="pound" class="key numpad2">#</button>
-    <br>
-    <button id="star" class="key numpad">*</button>
-    <button id="num0" class="key numpad">0</button>
-    <button id="pound" class="key numpad">#</button>
-  </div>
-</div>
+      <form role="dialog" data-type="confirm" class="lcdui-alert" id="lcdui-alert" style="display: none">
+        <section>
+          <h1 class="title"></h1>
+          <p class="text"></p>
+          <p style="border-top: 0"><progress style="display: none"></progress></p>
+        </section>
+        <menu>
+          <button class="button0" style="display: none"></button>
+          <button class="button1" style="display: none"></button>
+          <button class="button2" style="display: none"></button>
+        </menu>
+      </form>
 
-</body> 
+      <div class="lcdui-textbox" id="lcdui-textbox" style="display:none">
+        <div class="lcdui-textbox-card">
+          <section>
+            <h1 class="title"></h1>
+            <div class="textbox-fields"></div>
+          </section>
+          <menu>
+            <button class="button0" style="display: none"></button>
+            <button class="button1" style="display: none"></button>
+            <button class="button2" style="display: none"></button>
+          </menu>
+        </div>
+      </div>
+
+      <form role="dialog" data-type="confirm" class="sms-listener-prompt" id="sms-listener-prompt" style="display: none">
+        <section>
+          <h1>SMS Verification</h1>
+          <p class="verificationText"></p>
+          <input type="text" placeholder="Type SMS Here">
+          <p class="timeLeft"></p>
+          <progress class="timeLeftBar" value="0" max="100"></progress>
+        </section>
+        <menu>
+          <button class="cancel">Cancel</button>
+          <button class="recommend">Done</button>
+        </menu>
+      </form>
+
+      <form role="dialog" data-type="confirm" class="nokia-fileui-prompt" id="nokia-fileui-prompt" style="display: none">
+        <section>
+          <h1>Select a file</h1>
+          <p><input type="file" name="nokia-fileui-file">
+        </p></section>
+        <menu>
+          <button class="cancel">Cancel</button>
+          <button class="recommend">Done</button>
+        </menu>
+      </form>
+
+      <form role="dialog" data-type="confirm" class="download-failure-dialog" id="download-failure-dialog" style="display: none">
+        <section>
+          <h1 class="download-dialog-text">Download failure</h1>
+          <p>The download of midlet failed. Press <i>Retry</i> to try again.</p>
+        </section>
+        <menu>
+          <button class="recommend">Retry</button>
+        </menu>
+      </form>
+    </div>
+  </div>
+  </main>
+
+  <!-- 遮罩层容器，用于放置弹出的 Alert/TextBox -->
+  <div id="lcdui-overlay-container"></div>
+  <footer id="keypad" class="row-reverse" onselectstart="return false" oncontextmenu="return false" aria-label="虚拟键盘" data-i18n-aria="player.keypad">
+    <div id="joypad">
+      <div id="choice" class="key" role="button" tabindex="-1">左软键</div>
+      <div id="up" class="key" role="button" tabindex="-1">▲</div>
+      <div id="back" class="key" role="button" tabindex="-1">右软键</div><br>
+      <div id="left" class="key" role="button" tabindex="-1">◀</div>
+      <div id="ok" class="key" role="button" tabindex="-1">OK</div>
+      <div id="right" class="key" role="button" tabindex="-1">▶</div><br>
+      <div class="key" style="visibility:hidden"></div>
+      <div id="down" class="key" role="button" tabindex="-1">▼</div>
+      <div id="exit" class="key" role="button" tabindex="-1">挂断</div>
+    </div>
+    <div id="numpad">
+      <div id="num1" class="key" role="button" tabindex="-1">1</div>
+      <div id="num2" class="key" role="button" tabindex="-1">2</div>
+      <div id="num3" class="key" role="button" tabindex="-1">3</div>
+      <div id="star" class="key numpad2" role="button" tabindex="-1">*</div>
+      <br>
+      <div id="num4" class="key" role="button" tabindex="-1">4</div>
+      <div id="num5" class="key" role="button" tabindex="-1">5</div>
+      <div id="num6" class="key" role="button" tabindex="-1">6</div>
+      <div id="num0" class="key numpad2" role="button" tabindex="-1">0</div>
+      <br>
+      <div id="num7" class="key" role="button" tabindex="-1">7</div>
+      <div id="num8" class="key" role="button" tabindex="-1">8</div>
+      <div id="num9" class="key" role="button" tabindex="-1">9</div>
+      <div id="pound" class="key numpad2" role="button" tabindex="-1">#</div>
+      <br>
+      <div id="star" class="key numpad" role="button" tabindex="-1">*</div>
+      <div id="num0" class="key numpad" role="button" tabindex="-1">0</div>
+      <div id="pound" class="key numpad" role="button" tabindex="-1">#</div>
+    </div>
+  </footer>
+
+  <script>
+    loadVersionedPage('main', function (err) {
+      window.hideStartupLoader();
+      if (err) console.error(err);
+    });
+  </script>
+
+</body>
+
 </html>

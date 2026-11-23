@@ -1,4 +1,1 @@
-// generated, build-specific configuration
-
-config.release = true;
-config.version = "20241231";
+config.release=!1,config.version="20241231";

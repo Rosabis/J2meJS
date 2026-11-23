@@ -1,137 +1,1244 @@
 <!DOCTYPE html>
-<html>
-	<head>
-		<meta charset="utf-8">
-		<title>j2me在线模拟器-批量安装版本</title>
-		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
-        
-		<link rel="stylesheet" type="text/css" href="style/index.css">
-		<!-- Required for non-UTF encodings -->
-		<script src="libs/encoding.js"></script> 
-		
-		<script type="text/javascript" src="bld/native.js" defer></script>
-		<script type="text/javascript" src="config/default.js" defer></script>
-		<script type="text/javascript" src="config/runtests.js" defer></script>
-		<script type="text/javascript" src="config/build.js" defer></script>
-		<script type="text/javascript" src="config/urlparams.js" defer></script> 
-		<script type="text/javascript" src="bld/j2me.js" defer></script>
-		<script type="text/javascript" src="bld/main-all.js" defer></script>
+<html lang="zh-CN">
 
-	</head>
-	<body>
-		<input id="jarFileupload" accept=".jar" multiple="true" type="file" style="visibility: hidden;display:none;" />
-		<h3>游戏列表：</h3>
-	
-		
-		<h3>游戏列表：</h3>
-		<div id="parentContainer">  
-			<div style="display:flex;flex-wrap: wrap; margin: 10px;float:left;align-items: center;" id="gameListDiv">
+<head>
+	<meta charset="utf-8">
+	<title>j2me在线模拟器 - 批量安装版本</title>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,viewport-fit=cover">
+	<meta name="theme-color" content="#F5F5F5" media="(prefers-color-scheme: light)">
+	<meta name="theme-color" content="#0D0D0D" media="(prefers-color-scheme: dark)">
+	<style>
+		#startup-loader {
+			position: fixed;
+			inset: 0;
+			z-index: 99999;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: #ffffff;
+			color: #4f5965;
+			opacity: 1;
+			visibility: visible;
+			transition: opacity .35s ease, visibility .35s ease;
+		}
 
-				<a class="game"  href="javascript:void(0)"
-					onclick="openJar('Anyview4.0.jar','com.ismyway.anyview.Anyview');">
-					<div style="height:64px;">
-						<img src="img/anyview.png"></img>
-					</div>
-					Anyview
-				</a> 
-				
-			</div>  
+		#startup-loader.is-hidden {
+			opacity: 0;
+			visibility: hidden;
+			pointer-events: none;
+		}
+
+		#startup-loader .loader-inner {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 26px;
+			font-family: "Segoe UI", Arial, sans-serif;
+		}
+
+		#startup-loader .loader-word {
+			--loader-char-size: clamp(20px, 7.6vw, 64px);
+			--loader-char-gap: clamp(3px, 1.4vw, 10px);
+			display: flex;
+			gap: var(--loader-char-gap);
+			align-items: center;
+			justify-content: center;
+			flex-wrap: nowrap;
+			white-space: nowrap;
+			max-width: 96vw;
+		}
+
+		#startup-loader .loader-char {
+			width: var(--loader-char-size);
+			height: var(--loader-char-size);
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: 8px;
+			background: #59616c;
+			color: #ffffff;
+			font-size: calc(var(--loader-char-size) * 0.68);
+			font-weight: 700;
+			line-height: 1;
+			--loader-bounce: calc(var(--loader-char-size) * 0.18);
+			box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+			animation: startup-bounce 1.05s ease-in-out infinite;
+		}
+
+		#startup-loader .loader-char:nth-child(1) {
+			animation-delay: .00s;
+			transform: rotate(-10deg);
+			color: #6fd8f2;
+		}
+
+		#startup-loader .loader-char:nth-child(2) {
+			animation-delay: .08s;
+			transform: rotate(-10deg);
+			color: #6fd8f2;
+		}
+
+		#startup-loader .loader-char:nth-child(3) {
+			animation-delay: .16s;
+		}
+
+		#startup-loader .loader-char:nth-child(4) {
+			animation-delay: .24s;
+		}
+
+		#startup-loader .loader-char:nth-child(5) {
+			animation-delay: .32s;
+		}
+
+		#startup-loader .loader-char:nth-child(6) {
+			animation-delay: .40s;
+		}
+
+		#startup-loader .loader-char:nth-child(7) {
+			animation-delay: .48s;
+		}
+
+		#startup-loader .loader-char:nth-child(8) {
+			animation-delay: .56s;
+		}
+
+		#startup-loader .loader-subtitle {
+			font-size: 36px;
+			font-weight: 600;
+			letter-spacing: .01em;
+			color: #5b646e;
+			line-height: 1.1;
+			text-align: center;
+		}
+
+		@media (prefers-color-scheme: dark) {
+			#startup-loader {
+				background: #111318;
+				color: #d7dce4;
+			}
+
+			#startup-loader .loader-char {
+				background: #4f5561;
+				color: #f2f4f8;
+			}
+
+			#startup-loader .loader-char:nth-child(1),
+			#startup-loader .loader-char:nth-child(2) {
+				color: #7be4ff;
+			}
+
+			#startup-loader .loader-subtitle {
+				color: #c6ccd6;
+			}
+		}
+
+		@keyframes startup-bounce {
+
+			0%,
+			100% {
+				transform: translateY(0);
+			}
+
+			50% {
+				transform: translateY(calc(-1 * var(--loader-bounce, 12px)));
+			}
+		}
+
+		/* From Uiverse.io by BlackisPlay */
+		#ghost {
+			position: relative;
+			scale: 0.8;
+		}
+
+		#red {
+			animation: upNDown infinite 0.5s;
+			position: relative;
+			width: 120px;
+			height: 120px;
+			display: grid;
+			grid-template-columns: repeat(14, 1fr);
+			grid-template-rows: repeat(14, 1fr);
+			grid-column-gap: 0px;
+			grid-row-gap: 0px;
+			grid-template-areas:
+				"a1  a2  a3  a4  a5  top0  top0  top0  top0  a10 a11 a12 a13 a14"
+				"b1  b2  b3  top1 top1 top1 top1 top1 top1 top1 top1 b12 b13 b14"
+				"c1 c2 top2 top2 top2 top2 top2 top2 top2 top2 top2 top2 c13 c14"
+				"d1 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 d14"
+				"e1 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 e14"
+				"f1 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 top3 f14"
+				"top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4"
+				"top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4"
+				"top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4"
+				"top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4"
+				"top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4"
+				"top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4 top4"
+				"st0 st0 an4 st1 an7 st2 an10 an10 st3 an13 st4 an16 st5 st5"
+				"an1 an2 an3 an5 an6 an8 an9 an9 an11 an12 an14 an15 an17 an18";
+		}
+
+		@keyframes upNDown {
+
+			0%,
+			49% {
+				transform: translateY(0px);
+			}
+
+			50%,
+			100% {
+				transform: translateY(-10px);
+			}
+		}
+
+		#top0,
+		#top1,
+		#top2,
+		#top3,
+		#top4,
+		#st0,
+		#st1,
+		#st2,
+		#st3,
+		#st4,
+		#st5 {
+			background-color: red;
+		}
+
+		#top0 {
+			grid-area: top0;
+		}
+
+		#top1 {
+			grid-area: top1;
+		}
+
+		#top2 {
+			grid-area: top2;
+		}
+
+		#top3 {
+			grid-area: top3;
+		}
+
+		#top4 {
+			grid-area: top4;
+		}
+
+		#st0 {
+			grid-area: st0;
+		}
+
+		#st1 {
+			grid-area: st1;
+		}
+
+		#st2 {
+			grid-area: st2;
+		}
+
+		#st3 {
+			grid-area: st3;
+		}
+
+		#st4 {
+			grid-area: st4;
+		}
+
+		#st5 {
+			grid-area: st5;
+		}
+
+		#an1 {
+			grid-area: an1;
+			animation: flicker0 infinite 0.5s;
+		}
+
+		#an18 {
+			grid-area: an18;
+			animation: flicker0 infinite 0.5s;
+		}
+
+		#an2 {
+			grid-area: an2;
+			animation: flicker1 infinite 0.5s;
+		}
+
+		#an17 {
+			grid-area: an17;
+			animation: flicker1 infinite 0.5s;
+		}
+
+		#an3 {
+			grid-area: an3;
+			animation: flicker1 infinite 0.5s;
+		}
+
+		#an16 {
+			grid-area: an16;
+			animation: flicker1 infinite 0.5s;
+		}
+
+		#an4 {
+			grid-area: an4;
+			animation: flicker1 infinite 0.5s;
+		}
+
+		#an15 {
+			grid-area: an15;
+			animation: flicker1 infinite 0.5s;
+		}
+
+		#an6 {
+			grid-area: an6;
+			animation: flicker0 infinite 0.5s;
+		}
+
+		#an12 {
+			grid-area: an12;
+			animation: flicker0 infinite 0.5s;
+		}
+
+		#an7 {
+			grid-area: an7;
+			animation: flicker0 infinite 0.5s;
+		}
+
+		#an13 {
+			grid-area: an13;
+			animation: flicker0 infinite 0.5s;
+		}
+
+		#an9 {
+			grid-area: an9;
+			animation: flicker1 infinite 0.5s;
+		}
+
+		#an10 {
+			grid-area: an10;
+			animation: flicker1 infinite 0.5s;
+		}
+
+		#an8 {
+			grid-area: an8;
+			animation: flicker0 infinite 0.5s;
+		}
+
+		#an11 {
+			grid-area: an11;
+			animation: flicker0 infinite 0.5s;
+		}
+
+		@keyframes flicker0 {
+
+			0%,
+			49% {
+				background-color: red;
+			}
+
+			50%,
+			100% {
+				background-color: transparent;
+			}
+		}
+
+		@keyframes flicker1 {
+
+			0%,
+			49% {
+				background-color: transparent;
+			}
+
+			50%,
+			100% {
+				background-color: red;
+			}
+		}
+
+		#eye {
+			width: 40px;
+			height: 50px;
+			position: absolute;
+			top: 30px;
+			left: 10px;
+		}
+
+		#eye::before {
+			content: "";
+			background-color: white;
+			width: 20px;
+			height: 50px;
+			transform: translateX(10px);
+			display: block;
+			position: absolute;
+		}
+
+		#eye::after {
+			content: "";
+			background-color: white;
+			width: 40px;
+			height: 30px;
+			transform: translateY(10px);
+			display: block;
+			position: absolute;
+		}
+
+		#eye1 {
+			width: 40px;
+			height: 50px;
+			position: absolute;
+			top: 30px;
+			right: 30px;
+		}
+
+		#eye1::before {
+			content: "";
+			background-color: white;
+			width: 20px;
+			height: 50px;
+			transform: translateX(10px);
+			display: block;
+			position: absolute;
+		}
+
+		#eye1::after {
+			content: "";
+			background-color: white;
+			width: 40px;
+			height: 30px;
+			transform: translateY(10px);
+			display: block;
+			position: absolute;
+		}
+
+		#pupil {
+			width: 20px;
+			height: 20px;
+			background-color: blue;
+			position: absolute;
+			top: 50px;
+			left: 10px;
+			z-index: 1;
+			animation: eyesMovement infinite 3s;
+		}
+
+		#pupil1 {
+			width: 20px;
+			height: 20px;
+			background-color: blue;
+			position: absolute;
+			top: 50px;
+			right: 50px;
+			z-index: 1;
+			animation: eyesMovement infinite 3s;
+		}
+
+		@keyframes eyesMovement {
+
+			0%,
+			49% {
+				transform: translateX(0px);
+			}
+
+			50%,
+			99% {
+				transform: translateX(10px);
+			}
+
+			100% {
+				transform: translateX(0px);
+			}
+		}
+
+		#shadow {
+			background-color: black;
+			width: 140px;
+			height: 140px;
+			position: absolute;
+			border-radius: 50%;
+			transform: rotateX(80deg);
+			filter: blur(20px);
+			top: 80%;
+			animation: shadowMovement infinite 0.5s;
+		}
+
+		@keyframes shadowMovement {
+
+			0%,
+			49% {
+				opacity: 0.5;
+			}
+
+			50%,
+			100% {
+				opacity: 0.2;
+			}
+		}
+	</style>
+	<script>
+		window.hideStartupLoader = function () {
+			var loader = document.getElementById('startup-loader');
+			if (!loader || loader.classList.contains('is-hidden')) return;
+			loader.classList.add('is-hidden');
+			setTimeout(function () {
+				if (loader && loader.parentNode) loader.parentNode.removeChild(loader);
+			}, 420);
+		};
+	</script>
+
+	<link rel="manifest" href="manifest.json">
+	<link rel="apple-touch-icon" sizes="192x192" href="img/icon-192.png">
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="default">
+	<script type="text/javascript" src="js/load-versioned.js"></script>
+</head>
+
+<body>
+	<div id="startup-loader" aria-live="polite" aria-label="页面加载中" data-i18n-aria="page.loading">
+		<div class="loader-inner">
+			<div id="ghost">
+				<div id="red">
+					<div id="pupil"></div>
+					<div id="pupil1"></div>
+					<div id="eye"></div>
+					<div id="eye1"></div>
+					<div id="top0"></div>
+					<div id="top1"></div>
+					<div id="top2"></div>
+					<div id="top3"></div>
+					<div id="top4"></div>
+					<div id="st0"></div>
+					<div id="st1"></div>
+					<div id="st2"></div>
+					<div id="st3"></div>
+					<div id="st4"></div>
+					<div id="st5"></div>
+					<div id="an1"></div>
+					<div id="an2"></div>
+					<div id="an3"></div>
+					<div id="an4"></div>
+					<div id="an5"></div>
+					<div id="an6"></div>
+					<div id="an7"></div>
+					<div id="an8"></div>
+					<div id="an9"></div>
+					<div id="an10"></div>
+					<div id="an11"></div>
+					<div id="an12"></div>
+					<div id="an13"></div>
+					<div id="an14"></div>
+					<div id="an15"></div>
+					<div id="an16"></div>
+					<div id="an17"></div>
+					<div id="an18"></div>
+				</div>
+				<div id="shadow"></div>
+			</div>
+
+
+			<div class="loader-subtitle">Loading...</div>
 
 		</div>
-		
+	</div>
+	<input id="jarFileupload" accept=".jar" multiple="true" type="file" style="visibility:hidden;display:none;">
+	<input id="importSaveFileBatch" accept=".zip" type="file" style="visibility:hidden;display:none;">
 
-		<div style="text-align: center;clear: both;">
+	<!-- Desktop Left Rail -->
+	<nav class="desktop-rail" id="desktopRail">
+		<button class="rail-item active" data-tab="games" onclick="switchTab('games')">
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+				<rect x="2" y="6" width="20" height="12" rx="2"/>
+				<line x1="6" y1="12" x2="10" y2="12"/>
+				<line x1="8" y1="10" x2="8" y2="14"/>
+				<circle cx="15" cy="10.5" r="0.8" fill="currentColor" stroke="none"/>
+				<circle cx="17.5" cy="13" r="0.8" fill="currentColor" stroke="none"/>
+			</svg>
+			<span data-i18n="nav.games">游戏</span>
+		</button>
+		<button class="rail-item" data-tab="settings" onclick="switchTab('settings')">
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+				<circle cx="12" cy="12" r="3"/>
+				<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+			</svg>
+			<span data-i18n="nav.settings">设置</span>
+		</button>
+	</nav>
 
-			<select id="canvasSize" class="filter-box" onchange="canvasSizeHandleChange()">
-				<option value="size-240x320">显示尺寸: 240x320</option>
-				<option value="size-320x240">显示尺寸: 320x240</option>
-				<option value="size-128x128">显示尺寸: 128x128</option>
-				<option value="size-176x220">显示尺寸: 176x220</option>
-				
-				<option value="size-240x400">显示尺寸: 240x400</option>
-				<option value="size-400x240">显示尺寸: 400x240</option>
-				<option value="size-360x640">显示尺寸: 360x640</option>
-				<option value="size-640x360">显示尺寸: 640x360</option>
-				<option value="size-480x800">显示尺寸: 480x800</option>
-				<option value="size-800x480">显示尺寸: 800x480</option>
-				<option value="size-no" selected>显示尺寸: 无限制</option>
-			</select>
-			<select id="gamepadSize" class="filter-box"  onchange="gamepadSizeHandleChange()">
-				<option value="gamepad-0" selected>虚拟键盘-无</option>
-				<option value="gamepad-1">虚拟键盘-小</option>
-				<option value="gamepad-2">虚拟键盘-中</option>
-				<option value="gamepad-3">虚拟键盘-大</option>
-				<option value="gamepad-4">虚拟键盘-特大</option>
-			</select>
-
-			<select id="gameresize" class="filter-box" onchange="gameresizeHandleChange()">
-				<option value="resize-1" selected>无缩放</option> 
-				<option value="resize-0x5">缩放0.5倍</option>
-				<option value="resize-0x75">缩放0.75倍</option>
-				<option value="resize-1x5">缩放1.5倍</option>
-				<option value="resize-2">缩放2倍</option>
-				<option value="resize-2x5">缩放2.5倍</option>
-				<option value="resize-3">缩放3倍</option>
-			</select>
-			
-			<select id="enginemode" class="filter-box" onchange="enginemodeOnclick()">
-				<option value="enginemode1-classesold.jar" selected>内核1-兼容模式</option> 
-				<option value="enginemode2-classes2.jar">内核2-标准模式</option>
-				<option value="enginemode3-classes.jar">内核3-预览模式</option> 
-			</select> 
-
-			</br>
-			</br>
-			<select id="localjars" class="filter-box" onchange="localjarsHandleChange()">
-					<option value="" selected>无项目</option>
-			</select>
-			<button class="btn" onclick="openLocalJar()">
-				选择本地jar
-			</button>
-
-			<button class="btn" onclick="loadLocalJar()">
-				运行本地jar
-			</button>
-
-			<button class="btn" onclick="deleteLocalJar()">
-				删除本地jar
-			</button>
-			<button class="btn" onclick="clearLocalJar()">
-				清空本地jar
-			</button>
-
-			</br>
-			</br>
-			</br>
-			</br>
-			<a href="index.html" style="float: right;">
-				标准版本
+	<!-- TopAppBar -->
+	<div class="top-app-bar" id="topAppBar">
+		<div class="top-bar-small">
+			<a href="index.html" class="top-bar-nav-icon" title="返回标准版">
+				<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+					<polyline points="15 18 9 12 15 6"></polyline>
+				</svg>
 			</a>
-			</br>
-			</br>
-			<a href="updatelog.html" style="float: right;">
-				更新日志
-			</a>
-			</br>
-			</br>
-		</div>  
+			<div class="top-bar-small-title" id="topBarSmallTitle" data-i18n="title.batch">批量安装版</div>
+			<a href="about.html" class="top-bar-about-link" title="关于作者" data-i18n-title="nav.about"><svg class="top-bar-about-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="18" height="18" aria-hidden="true">
+					<path d="M471.947636 759.319273l46.848-83.223273a46.173091 46.173091 0 0 1 63.976728-17.594182l324.491636 192.186182a48.709818 48.709818 0 0 1 17.152 65.629091l-46.848 83.223273a46.173091 46.173091 0 0 1-63.976727 17.594181l-324.491637-192.186181a48.709818 48.709818 0 0 1-17.152-65.629091zM791.272727 46.545455h93.090909a46.545455 46.545455 0 0 1 46.545455 46.545454v884.363636a46.545455 46.545455 0 0 1-46.545455 46.545455h-93.090909a46.545455 46.545455 0 0 1-46.545454-46.545455V93.090909a46.545455 46.545455 0 0 1 46.545454-46.545454z" fill="#E5E5E5"></path>
+					<path d="M861.090909 977.454545a58.181818 58.181818 0 0 1-23.272727-9.30909l-349.090909-196.654546L139.636364 968.145455a28.113455 28.113455 0 0 1-23.272728 9.30909 24.832 24.832 0 0 1-23.272727-23.272727c0.349091 4.375273 0-37.096727 0-23.272727V46.545455a46.545455 46.545455 0 0 1 46.545455-46.545455h698.181818a46.545455 46.545455 0 0 1 46.545454 46.545455v907.636363a21.736727 21.736727 0 0 1-23.272727 23.272727zM837.818182 46.545455H139.636364v867.793454l336.896-189.765818a23.016727 23.016727 0 0 1 4.538181-1.489455 23.691636 23.691636 0 0 1 2.746182-0.907636 37.236364 37.236364 0 0 1 9.821091 0 23.691636 23.691636 0 0 1 2.746182 0.907636 23.016727 23.016727 0 0 1 4.538182 1.489455L837.818182 914.338909V46.545455zM256 581.818182a23.272727 23.272727 0 0 1 23.272727-23.272727h418.909091a23.272727 23.272727 0 0 1 0 46.545454H279.272727a23.272727 23.272727 0 0 1-23.272727-23.272727z m442.181818-162.909091H279.272727a23.272727 23.272727 0 0 1 0-46.545455h418.909091a23.272727 23.272727 0 0 1 0 46.545455z m0-186.181818H279.272727a23.272727 23.272727 0 0 1 0-46.545455h418.909091a23.272727 23.272727 0 0 1 0 46.545455z" fill="#1C1C1C"></path>
+				</svg><span data-i18n="nav.about">关于作者</span></a>
+		</div>
+		<div class="top-bar-large-title" id="topBarLargeTitle" data-i18n="title.batch">批量安装版</div>
+	</div>
 
-		<script type="text/javascript">
-			var isbatch=1;
-			var GameList = [];
-		</script>
-		<script type="text/javascript" src="index.js"></script>
-		
-		<script>
+	<!-- Page Layout -->
+	<div class="page-layout">
+		<!-- Tab: 游戏 -->
+		<div class="tab-view active" id="tab-games">
+			<div class="search-bar">
+				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<circle cx="11" cy="11" r="8"/>
+					<line x1="21" y1="21" x2="16.65" y2="16.65"/>
+				</svg>
+				<input type="text" id="gameSearch" placeholder="搜索游戏" data-i18n-placeholder="search.placeholder" oninput="filterGames()">
+			</div>
+			<div class="section-card section-card-games">
+				<div id="parentContainer">
+					<div id="gameListDiv">
+						<a class="game" href="javascript:void(0)" data-default="1" data-jarname="Anyview4.0.jar" data-midlet="com.ismyway.anyview.Anyview">
+							<div><img src="img/anyview.png" alt="Anyview"></div>
+							<div class="game-info">
+								<div class="game-name">Anyview</div>
+								<div class="game-meta">v4.0.12 · ismyway.com</div>
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Tab: 设置 -->
+		<div class="tab-view" id="tab-settings">
+			<div class="sidebar-header" data-i18n="nav.settings">设置</div>
+
+			<!-- 游戏设置 -->
+			<div class="section-card">
+				<div class="section-title" data-i18n="section.game">游戏</div>
+				<div class="pref-item clickable" onclick="window.location.href='keyboard-editor.html'">
+					<span class="pref-label" data-i18n="pref.keyboardLayout">键盘布局</span>
+					<span class="pref-value" id="currentLayoutName">经典键盘</span>
+					<svg class="pref-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+						<polyline points="9 18 15 12 9 6"></polyline>
+					</svg>
+				</div>
+				<div class="pref-item">
+					<span class="pref-label" data-i18n="pref.gameBg">游戏背景</span>
+					<div class="color-picker" id="bgColorPicker">
+						<span class="color-dot active" data-color="" title="无" data-i18n-title="color.none"></span>
+						<span class="color-dot" data-color="#6B5CE7" style="background:#6B5CE7" title="紫色" data-i18n-title="color.purple"></span>
+						<span class="color-dot" data-color="#FF9500" style="background:#FF9500" title="橙色" data-i18n-title="color.orange"></span>
+						<span class="color-dot" data-color="#FF3B30" style="background:#FF3B30" title="红色" data-i18n-title="color.red"></span>
+						<span class="color-dot" data-color="#34C759" style="background:#34C759" title="绿色" data-i18n-title="color.green"></span>
+					</div>
+				</div>
+				<div class="pref-item">
+					<span class="pref-label" data-i18n="pref.config">配置管理</span>
+					<div class="button-group" style="gap:8px">
+						<button class="btn btn-sm" onclick="exportKeyboardConfig()" data-i18n="btn.exportConfig">导出配置</button>
+						<button class="btn btn-sm" onclick="importKeyboardConfig()" data-i18n="btn.importConfig">导入配置</button>
+						<button class="btn btn-sm" onclick="importLangPack()" data-i18n="btn.importLang">导入语言包</button>
+					</div>
+				</div>
+			</div>
+
+			<!-- 显示设置 -->
+			<div class="section-card">
+				<div class="section-title" data-i18n="section.global">全局设置</div>
+				<div class="controls-section">
+					<div class="controls-container">
+						<select id="uiLanguage" class="filter-box" onchange="uiLanguageHandleChange()">
+							<option value="auto" selected="selected" data-i18n="setting.uiLanguage" data-i18n-suffix-key="lang.auto">界面语言: 跟随系统</option>
+							<option value="zh-CN">界面语言: 简体中文</option>
+							<option value="en">界面语言: English</option>
+						</select>
+						<select id="canvasSize" class="filter-box" onchange="canvasSizeHandleChange()">
+							<option value="size-240x320" data-i18n="setting.canvasSize" data-i18n-suffix="240×320">显示尺寸: 240×320</option>
+							<option value="size-320x240" data-i18n="setting.canvasSize" data-i18n-suffix="320×240">显示尺寸: 320×240</option>
+							<option value="size-128x128" data-i18n="setting.canvasSize" data-i18n-suffix="128×128">显示尺寸: 128×128</option>
+							<option value="size-176x220" data-i18n="setting.canvasSize" data-i18n-suffix="176×220">显示尺寸: 176×220</option>
+							<option value="size-240x400" data-i18n="setting.canvasSize" data-i18n-suffix="240×400">显示尺寸: 240×400</option>
+							<option value="size-400x240" data-i18n="setting.canvasSize" data-i18n-suffix="400×240">显示尺寸: 400×240</option>
+							<option value="size-360x640" data-i18n="setting.canvasSize" data-i18n-suffix="360×640">显示尺寸: 360×640</option>
+							<option value="size-640x360" data-i18n="setting.canvasSize" data-i18n-suffix="640×360">显示尺寸: 640×360</option>
+							<option value="size-480x800" data-i18n="setting.canvasSize" data-i18n-suffix="480×800">显示尺寸: 480×800</option>
+							<option value="size-800x480" data-i18n="setting.canvasSize" data-i18n-suffix="800×480">显示尺寸: 800×480</option>
+							<option value="size-no" selected="selected" data-i18n="setting.canvasSize" data-i18n-suffix-key="value.unlimited">显示尺寸: 无限制</option>
+							<option value="size-custom" data-i18n="setting.canvasSize" data-i18n-suffix-key="value.custom">显示尺寸: 自定义</option>
+						</select>
+						<div id="customSizeBox" class="custom-size-box" style="display:none;">
+							<input id="customWidth" type="number" class="custom-size-input" placeholder="宽" data-i18n-placeholder="custom.width" min="1" max="9999">
+							<span class="custom-size-x">×</span>
+							<input id="customHeight" type="number" class="custom-size-input" placeholder="高" data-i18n-placeholder="custom.height" min="1" max="9999">
+						</div>
+					</div>
+					<div class="controls-container">
+						<select id="gameresize" class="filter-box" onchange="gameresizeHandleChange()">
+							<option value="resize-auto" selected="selected" data-i18n="setting.resize" data-i18n-suffix-key="value.resizeAuto">缩放: 自动缩放</option>
+							<option value="resize-1" data-i18n="setting.resize" data-i18n-suffix="1×">缩放: 1×</option>
+							<option value="resize-0x5" data-i18n="setting.resize" data-i18n-suffix="0.5×">缩放: 0.5×</option>
+							<option value="resize-0x75" data-i18n="setting.resize" data-i18n-suffix="0.75×">缩放: 0.75×</option>
+							<option value="resize-1x5" data-i18n="setting.resize" data-i18n-suffix="1.5×">缩放: 1.5×</option>
+							<option value="resize-2" data-i18n="setting.resize" data-i18n-suffix="2×">缩放: 2×</option>
+							<option value="resize-2x5" data-i18n="setting.resize" data-i18n-suffix="2.5×">缩放: 2.5×</option>
+							<option value="resize-3" data-i18n="setting.resize" data-i18n-suffix="3×">缩放: 3×</option>
+						</select>
+						<select id="screenRotation" class="filter-box" onchange="screenRotationHandleChange()">
+							<option value="none" selected="selected" data-i18n="setting.rotation" data-i18n-suffix-key="value.noRotate">屏幕旋转: 不旋转</option>
+							<option value="left" data-i18n="setting.rotation" data-i18n-suffix-key="value.rotateLeft">屏幕旋转: 左转</option>
+							<option value="right" data-i18n="setting.rotation" data-i18n-suffix-key="value.rotateRight">屏幕旋转: 右转</option>
+						</select>
+						<select id="keyVibrate" class="filter-box" onchange="keyVibrateHandleChange()">
+							<option value="off" data-i18n="setting.vibrate" data-i18n-suffix-key="value.off">按键震动: 关闭</option>
+							<option value="low" selected="selected" data-i18n="setting.vibrate" data-i18n-suffix-key="value.low">按键震动: 低</option>
+							<option value="medium" data-i18n="setting.vibrate" data-i18n-suffix-key="value.medium">按键震动: 中</option>
+							<option value="high" data-i18n="setting.vibrate" data-i18n-suffix-key="value.high">按键震动: 高</option>
+						</select>
+						<select id="enableJit" class="filter-box" onchange="enableJitHandleChange()">
+							<option value="1" selected="selected" data-i18n="setting.jit" data-i18n-suffix-key="value.on">JIT 加速: 开启</option>
+							<option value="0" data-i18n="setting.jit" data-i18n-suffix-key="value.offCompat">JIT 加速: 关闭（兼容）</option>
+						</select>
+						<select id="maxFps" class="filter-box" onchange="maxFpsHandleChange()">
+							<option value="0" selected="selected" data-i18n="setting.maxFps" data-i18n-suffix-key="value.unlimited">最大帧率: 无限制</option>
+							<option value="30" data-i18n="setting.maxFps" data-i18n-suffix="30">最大帧率: 30</option>
+							<option value="60" data-i18n="setting.maxFps" data-i18n-suffix="60">最大帧率: 60</option>
+							<option value="90" data-i18n="setting.maxFps" data-i18n-suffix="90">最大帧率: 90</option>
+							<option value="120" data-i18n="setting.maxFps" data-i18n-suffix="120">最大帧率: 120</option>
+						</select>
+						<select id="emuSpeed" class="filter-box" onchange="emuSpeedHandleChange()">
+							<option value="0.5" data-i18n="setting.speed" data-i18n-suffix="0.5×">运行倍速: 0.5×</option>
+							<option value="0.75" data-i18n="setting.speed" data-i18n-suffix="0.75×">运行倍速: 0.75×</option>
+							<option value="1" selected="selected" data-i18n="setting.speed" data-i18n-suffix="1×">运行倍速: 1×</option>
+							<option value="1.5" data-i18n="setting.speed" data-i18n-suffix="1.5×">运行倍速: 1.5×</option>
+							<option value="2" data-i18n="setting.speed" data-i18n-suffix="2×">运行倍速: 2×</option>
+							<option value="3" data-i18n="setting.speed" data-i18n-suffix="3×">运行倍速: 3×</option>
+							<option value="4" data-i18n="setting.speed" data-i18n-suffix="4×">运行倍速: 4×</option>
+							<option value="6" data-i18n="setting.speed" data-i18n-suffix="6×">运行倍速: 6×</option>
+							<option value="8" data-i18n="setting.speed" data-i18n-suffix="8×">运行倍速: 8×</option>
+							<option value="12" data-i18n="setting.speed" data-i18n-suffix="12×">运行倍速: 12×</option>
+							<option value="16" data-i18n="setting.speed" data-i18n-suffix="16×">运行倍速: 16×</option>
+						</select>
+						<select id="keyLayout" class="filter-box" onchange="keyLayoutHandleChange()">
+							<option value="nokia" selected="selected" data-i18n="setting.keyLayout" data-i18n-suffix-key="value.nokia">按键键值: 诺基亚</option>
+							<option value="siemens" data-i18n="setting.keyLayout" data-i18n-suffix-key="value.siemens">按键键值: Siemens</option>
+							<option value="motorola" data-i18n="setting.keyLayout" data-i18n-suffix-key="value.motorola">按键键值: 摩托罗拉</option>
+						</select>
+						<div class="pref-item font-size-item">
+							<span class="pref-label" data-i18n="pref.fontSize">LCDUI 字号</span>
+							<div class="font-size-box">
+								<span class="font-size-tag" data-i18n="font.small">小</span>
+								<input id="fontSmall" type="number" class="custom-size-input font-size-input" min="1" max="128" value="18" title="小号像素" data-i18n-title="font.smallTitle" onchange="fontSizeHandleChange()">
+								<span class="font-size-tag" data-i18n="font.medium">中</span>
+								<input id="fontMedium" type="number" class="custom-size-input font-size-input" min="1" max="128" value="22" title="中号像素" data-i18n-title="font.mediumTitle" onchange="fontSizeHandleChange()">
+								<span class="font-size-tag" data-i18n="font.large">大</span>
+								<input id="fontLarge" type="number" class="custom-size-input font-size-input" min="1" max="128" value="26" title="大号像素" data-i18n-title="font.largeTitle" onchange="fontSizeHandleChange()">
+							</div>
+						</div>
+						<button type="button" class="btn" id="clearJitCacheBtn" onclick="clearJitCacheHandle()" style="width:100%;margin-top:8px;" data-i18n="btn.clearJit">清理 JIT 缓存</button>
+					</div>
+				</div>
+			</div>
+
+			<!-- 本地 JAR -->
+			<div class="section-card">
+				<div class="section-title" data-i18n="section.localJar">本地 JAR</div>
+				<div class="controls-container" style="margin-bottom:10px;">
+					<select id="localjars" class="filter-box" onchange="localjarsHandleChange()">
+						<option value="" selected="selected" data-i18n="jar.none">无项目</option>
+					</select>
+				</div>
+				<div class="button-group">
+					<button class="btn btn-primary" onclick="openLocalJar()">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+							<polyline points="17 8 12 3 7 8"/>
+							<line x1="12" y1="3" x2="12" y2="15"/>
+						</svg>
+						<span data-i18n="btn.chooseJar">选择本地jar</span>
+					</button>
+					<button class="btn btn-primary" onclick="loadLocalJar()">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<polygon points="5 3 19 12 5 21 5 3"/>
+						</svg>
+						<span data-i18n="btn.runJar">运行本地jar</span>
+					</button>
+					<button class="btn" onclick="deleteLocalJar()" data-i18n="btn.deleteJar">删除缓存安装包</button>
+					<button class="btn" onclick="clearJarData()" data-i18n="btn.clearData">清除jar数据</button>
+					<button class="btn btn-danger" onclick="clearLocalJar()" data-i18n="btn.clearAllJars">清空本地jar</button>
+				</div>
+			</div>
+
+			<!-- 存档管理 -->
+			<div class="section-card">
+				<div class="section-title" data-i18n="section.saves">存档管理</div>
+				<div class="button-group">
+					<button class="btn btn-primary" onclick="exportSaveDataBatch()">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+							<polyline points="7 10 12 15 17 10"/>
+							<line x1="12" y1="15" x2="12" y2="3"/>
+						</svg>
+						<span data-i18n="btn.exportSave">导出存档</span>
+					</button>
+					<button class="btn btn-primary" onclick="triggerImportSaveBatch()">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+							<polyline points="17 8 12 3 7 8"/>
+							<line x1="12" y1="3" x2="12" y2="15"/>
+						</svg>
+						<span data-i18n="btn.importSave">导入存档</span>
+					</button>
+				</div>
+			</div>
+
+			<!-- 快捷链接 -->
+			<div class="section-card">
+				<div class="footer-links">
+					<a href="index.html">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+							<polyline points="9 22 9 12 15 12 15 22"/>
+						</svg>
+						标准版本
+					</a>
+					<a href="updatelog.html">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+							<polyline points="14 2 14 8 20 8"/>
+							<line x1="16" y1="13" x2="8" y2="13"/>
+							<line x1="16" y1="17" x2="8" y2="17"/>
+						</svg>
+						<span data-i18n="btn.updateLog">更新日志</span>
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Desktop Right Detail Panel -->
+	<aside class="desktop-detail" id="desktopDetail">
+		<div class="detail-empty" id="detailEmpty" data-i18n="detail.empty">点击左侧游戏查看详情</div>
+		<div class="detail-content" id="detailContent" style="display:none">
+			<div class="detail-game-header">
+				<img class="detail-game-icon" id="detailIcon" src="" alt="">
+				<div class="detail-game-name" id="detailName"></div>
+				<div class="detail-game-meta" id="detailMeta"></div>
+			</div>
+			<div class="detail-divider"></div>
+			<div class="detail-actions">
+				<button class="detail-action-btn primary" id="detailRun">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<polygon points="5 3 19 12 5 21 5 3"/>
+					</svg>
+					<span data-i18n="btn.run">运行</span>
+				</button>
+				<button class="detail-action-btn" id="detailSettings" onclick="detailOpenSettings()">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<circle cx="12" cy="12" r="3"/>
+						<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+					</svg>
+					<span data-i18n="btn.perGame">独立设置</span>
+				</button>
+				<button class="detail-action-btn" id="detailClearData" onclick="detailClearData()">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M3 6h18"/>
+						<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+						<rect x="5" y="6" width="14" height="14" rx="2"/>
+						<line x1="10" y1="11" x2="10" y2="17"/>
+						<line x1="14" y1="11" x2="14" y2="17"/>
+					</svg>
+					<span data-i18n="btn.clearSave">清除数据</span>
+				</button>
+				<button class="detail-action-btn danger" id="detailDelete" onclick="detailDelete()">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<polyline points="3 6 5 6 21 6"/>
+						<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+						<path d="M10 11v6"/>
+						<path d="M14 11v6"/>
+					</svg>
+					<span data-i18n="btn.delete">删除</span>
+				</button>
+			</div>
+			<!-- Inline Per-Game Settings (desktop) -->
+			<div class="detail-divider" style="margin-top:16px"></div>
+			<div class="detail-settings-title" id="detailSettingsTitle" data-i18n="btn.perGame">独立设置</div>
+			<div class="detail-settings-form" id="detailSettingsForm">
+				<div class="pref-item">
+					<span class="pref-label" data-i18n="pref.canvasSize">显示尺寸</span>
+					<select id="dsCanvasSize" onchange="dsSave()">
+						<option value="" data-i18n="value.follow">游戏默认/全局</option>
+						<option value="size-240x320">240×320</option>
+						<option value="size-320x240">320×240</option>
+						<option value="size-128x128">128×128</option>
+						<option value="size-176x220">176×220</option>
+						<option value="size-240x400">240×400</option>
+						<option value="size-400x240">400×240</option>
+						<option value="size-360x640">360×640</option>
+						<option value="size-640x360">640×360</option>
+						<option value="size-480x800">480×800</option>
+						<option value="size-800x480">800×480</option>
+						<option value="size-no" data-i18n="value.unlimited">无限制</option>
+					</select>
+				</div>
+				<div class="pref-item">
+					<span class="pref-label" data-i18n="pref.keyboardLayout">键盘布局</span>
+					<select id="dsGamepad" onchange="dsSave()">
+						<option value="" data-i18n="value.follow">游戏默认/全局</option>
+						<option value="方形全键盘" data-i18n="layout.square">方形全键盘</option>
+						<option value="全键盘" data-i18n="layout.full">全键盘</option>
+						<option value="国产兼容键盘" data-i18n="layout.cncompat">国产兼容键盘</option>
+						<option value="经典键盘" data-i18n="layout.classic">经典键盘</option>
+						<option value="简化键盘" data-i18n="layout.simple">简化键盘</option>
+						<option value="街机极简" data-i18n="layout.arcadeMini">街机极简</option>
+						<option value="街机4键" data-i18n="layout.arcade4">街机4键</option>
+						<option value="无按键" data-i18n="layout.none">无按键</option>
+					</select>
+				</div>
+				<div class="pref-item">
+					<span class="pref-label" data-i18n="pref.resize">缩放</span>
+					<select id="dsResize" onchange="dsSave()">
+						<option value="" data-i18n="value.follow">游戏默认/全局</option>
+						<option value="resize-auto" data-i18n="value.resizeAuto">自动缩放</option>
+						<option value="resize-1">1×</option>
+						<option value="resize-0x5">0.5×</option>
+						<option value="resize-0x75">0.75×</option>
+						<option value="resize-1x5">1.5×</option>
+						<option value="resize-2">2×</option>
+						<option value="resize-2x5">2.5×</option>
+						<option value="resize-3">3×</option>
+					</select>
+				</div>
+				<div class="pref-item">
+					<span class="pref-label" data-i18n="pref.rotation">屏幕旋转</span>
+					<select id="dsRotation" onchange="dsSave()">
+						<option value="" data-i18n="value.follow">游戏默认/全局</option>
+						<option value="none" data-i18n="value.noRotate">不旋转</option>
+						<option value="left" data-i18n="value.rotateLeft">左转</option>
+						<option value="right" data-i18n="value.rotateRight">右转</option>
+					</select>
+				</div>
+				<div class="pref-item">
+					<span class="pref-label" data-i18n="pref.vibrate">按键震动</span>
+					<select id="dsKeyVibrate" onchange="dsSave()">
+						<option value="" data-i18n="value.follow">游戏默认/全局</option>
+						<option value="off" data-i18n="value.off">关闭</option>
+						<option value="low" data-i18n="value.low">低</option>
+						<option value="medium" data-i18n="value.medium">中</option>
+						<option value="high" data-i18n="value.high">高</option>
+					</select>
+				</div>
+				<div class="pref-item">
+					<span class="pref-label" data-i18n="pref.jit">JIT 加速</span>
+					<select id="dsEnableJit" onchange="dsSave()">
+						<option value="" data-i18n="value.follow">游戏默认/全局</option>
+						<option value="1" data-i18n="value.on">开启</option>
+						<option value="0" data-i18n="value.offCompat">关闭（兼容）</option>
+					</select>
+				</div>
+				<div class="pref-item">
+					<span class="pref-label" data-i18n="pref.speed">运行倍速</span>
+					<select id="dsEmuSpeed" onchange="dsSave()">
+						<option value="" data-i18n="value.follow">游戏默认/全局</option>
+						<option value="0.5">0.5×</option>
+						<option value="0.75">0.75×</option>
+						<option value="1">1×</option>
+						<option value="1.5">1.5×</option>
+						<option value="2">2×</option>
+						<option value="3">3×</option>
+						<option value="4">4×</option>
+						<option value="6">6×</option>
+						<option value="8">8×</option>
+						<option value="12">12×</option>
+						<option value="16">16×</option>
+					</select>
+				</div>
+				<div class="pref-item">
+					<span class="pref-label" data-i18n="pref.keyLayout">按键键值</span>
+					<select id="dsKeyLayout" onchange="dsSave()">
+						<option value="" data-i18n="value.follow">游戏默认/全局</option>
+						<option value="nokia" data-i18n="value.nokia">诺基亚</option>
+						<option value="siemens">Siemens</option>
+						<option value="motorola" data-i18n="value.motorola">摩托罗拉</option>
+					</select>
+				</div>
+				<div class="pref-item font-size-item">
+					<span class="pref-label" data-i18n="pref.fontSize">LCDUI 字号</span>
+					<div class="font-size-box">
+						<span class="font-size-tag" data-i18n="font.small">小</span>
+						<input id="dsFontSmall" type="number" class="custom-size-input font-size-input" min="1" max="128" placeholder="全局" data-i18n-placeholder="font.global" title="小号像素" data-i18n-title="font.smallTitle" onchange="dsSave()">
+						<span class="font-size-tag" data-i18n="font.medium">中</span>
+						<input id="dsFontMedium" type="number" class="custom-size-input font-size-input" min="1" max="128" placeholder="全局" data-i18n-placeholder="font.global" title="中号像素" data-i18n-title="font.mediumTitle" onchange="dsSave()">
+						<span class="font-size-tag" data-i18n="font.large">大</span>
+						<input id="dsFontLarge" type="number" class="custom-size-input font-size-input" min="1" max="128" placeholder="全局" data-i18n-placeholder="font.global" title="大号像素" data-i18n-title="font.largeTitle" onchange="dsSave()">
+					</div>
+				</div>
+				<div class="detail-settings-btns">
+					<button class="btn" onclick="dsReset()" data-i18n="btn.resetGame">恢复游戏默认</button>
+					<button class="btn btn-primary" onclick="dsSave()" data-i18n="btn.save">保存</button>
+				</div>
+			</div>
+		</div>
+	</aside>
+
+	<!-- FAB -->
+	<button class="fab" id="fab" onclick="openLocalJar()" title="安装游戏" data-i18n-title="fab.install">
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+			<line x1="12" y1="5" x2="12" y2="19"/>
+			<line x1="5" y1="12" x2="19" y2="12"/>
+		</svg>
+	</button>
+
+	<!-- Action Sheet -->
+	<div class="action-sheet-overlay" id="actionSheetOverlay">
+		<div class="action-sheet" id="actionSheetMain">
+			<div class="action-sheet-handle"></div>
+			<div class="action-sheet-header" id="asTitle"></div>
+			<button class="action-sheet-item" onclick="asRun()">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<polygon points="5 3 19 12 5 21 5 3"/>
+				</svg>
+				<span data-i18n="btn.run">运行</span>
+			</button>
+			<button class="action-sheet-item" onclick="asSettings()">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<circle cx="12" cy="12" r="3"/>
+					<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+				</svg>
+				<span data-i18n="btn.perGame">独立设置</span>
+			</button>
+			<button class="action-sheet-item" onclick="asClearData()">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M3 6h18"/>
+					<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+					<rect x="5" y="6" width="14" height="14" rx="2"/>
+					<line x1="10" y1="11" x2="10" y2="17"/>
+					<line x1="14" y1="11" x2="14" y2="17"/>
+				</svg>
+				<span data-i18n="btn.clearSave">清除数据</span>
+			</button>
+			<div class="action-sheet-divider"></div>
+			<button class="action-sheet-item danger" id="asDelete" onclick="asDelete()">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<polyline points="3 6 5 6 21 6"/>
+					<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+					<path d="M10 11v6"/>
+					<path d="M14 11v6"/>
+				</svg>
+				<span data-i18n="btn.delete">删除</span>
+			</button>
+			<div class="action-sheet-divider"></div>
+			<button class="action-sheet-cancel" onclick="closeActionSheet()" data-i18n="btn.cancel">取消</button>
+		</div>
+		<div class="game-settings-sheet" id="gameSettingsSheet">
+			<div class="action-sheet-handle"></div>
+			<div class="gs-title" id="gsTitle" data-i18n="btn.perGame">独立设置</div>
+			<div class="gs-row">
+				<label data-i18n="pref.canvasSize">显示尺寸</label>
+				<select id="gsCanvasSize" onchange="gsAutoSave()">
+					<option value="" data-i18n="value.follow">游戏默认/全局</option>
+					<option value="size-240x320">240×320</option>
+					<option value="size-320x240">320×240</option>
+					<option value="size-128x128">128×128</option>
+					<option value="size-176x220">176×220</option>
+					<option value="size-240x400">240×400</option>
+					<option value="size-400x240">400×240</option>
+					<option value="size-360x640">360×640</option>
+					<option value="size-640x360">640×360</option>
+					<option value="size-480x800">480×800</option>
+					<option value="size-800x480">800×480</option>
+					<option value="size-no" data-i18n="value.unlimited">无限制</option>
+				</select>
+			</div>
+			<div class="gs-row">
+				<label data-i18n="pref.keyboardLayout">键盘布局</label>
+				<select id="gsGamepad" onchange="gsAutoSave()">
+					<option value="" data-i18n="value.follow">游戏默认/全局</option>
+						<option value="方形全键盘" data-i18n="layout.square">方形全键盘</option>
+					<option value="全键盘" data-i18n="layout.full">全键盘</option>
+					<option value="国产兼容键盘" data-i18n="layout.cncompat">国产兼容键盘</option>
+					<option value="经典键盘" data-i18n="layout.classic">经典键盘</option>
+					<option value="简化键盘" data-i18n="layout.simple">简化键盘</option>
+					<option value="街机极简" data-i18n="layout.arcadeMini">街机极简</option>
+					<option value="街机4键" data-i18n="layout.arcade4">街机4键</option>
+					<option value="无按键" data-i18n="layout.none">无按键</option>
+				</select>
+			</div>
+			<div class="gs-row">
+				<label data-i18n="pref.resize">缩放</label>
+				<select id="gsResize" onchange="gsAutoSave()">
+					<option value="" data-i18n="value.follow">游戏默认/全局</option>
+					<option value="resize-auto" data-i18n="value.resizeAuto">自动缩放</option>
+					<option value="resize-1">1×</option>
+					<option value="resize-0x5">0.5×</option>
+					<option value="resize-0x75">0.75×</option>
+					<option value="resize-1x5">1.5×</option>
+					<option value="resize-2">2×</option>
+					<option value="resize-2x5">2.5×</option>
+					<option value="resize-3">3×</option>
+				</select>
+			</div>
+			<div class="gs-row">
+				<label data-i18n="pref.rotation">屏幕旋转</label>
+				<select id="gsRotation" onchange="gsAutoSave()">
+					<option value="" data-i18n="value.follow">游戏默认/全局</option>
+					<option value="none" data-i18n="value.noRotate">不旋转</option>
+					<option value="left" data-i18n="value.rotateLeft">左转</option>
+					<option value="right" data-i18n="value.rotateRight">右转</option>
+				</select>
+			</div>
+			<div class="gs-row">
+				<label data-i18n="pref.vibrate">按键震动</label>
+				<select id="gsKeyVibrate" onchange="gsAutoSave()">
+					<option value="" data-i18n="value.follow">游戏默认/全局</option>
+					<option value="off" data-i18n="value.off">关闭</option>
+					<option value="low" data-i18n="value.low">低</option>
+					<option value="medium" data-i18n="value.medium">中</option>
+					<option value="high" data-i18n="value.high">高</option>
+				</select>
+			</div>
+			<div class="gs-row">
+				<label data-i18n="pref.jit">JIT 加速</label>
+				<select id="gsEnableJit" onchange="gsAutoSave()">
+					<option value="" data-i18n="value.follow">游戏默认/全局</option>
+					<option value="1" data-i18n="value.on">开启</option>
+					<option value="0" data-i18n="value.offCompat">关闭（兼容）</option>
+				</select>
+			</div>
+			<div class="gs-row">
+				<label data-i18n="pref.speed">运行倍速</label>
+				<select id="gsEmuSpeed" onchange="gsAutoSave()">
+					<option value="" data-i18n="value.follow">游戏默认/全局</option>
+					<option value="0.5">0.5×</option>
+					<option value="0.75">0.75×</option>
+					<option value="1">1×</option>
+					<option value="1.5">1.5×</option>
+					<option value="2">2×</option>
+					<option value="3">3×</option>
+					<option value="4">4×</option>
+					<option value="6">6×</option>
+					<option value="8">8×</option>
+					<option value="12">12×</option>
+					<option value="16">16×</option>
+				</select>
+			</div>
+			<div class="gs-row">
+				<label data-i18n="pref.keyLayout">按键键值</label>
+				<select id="gsKeyLayout" onchange="gsAutoSave()">
+					<option value="" data-i18n="value.follow">游戏默认/全局</option>
+					<option value="nokia" data-i18n="value.nokia">诺基亚</option>
+					<option value="siemens">Siemens</option>
+					<option value="motorola" data-i18n="value.motorola">摩托罗拉</option>
+				</select>
+			</div>
+			<div class="gs-row">
+				<label data-i18n="pref.fontSize">LCDUI 字号</label>
+				<div class="font-size-box">
+					<span class="font-size-tag" data-i18n="font.small">小</span>
+					<input id="gsFontSmall" type="number" class="custom-size-input font-size-input" min="1" max="128" placeholder="全局" data-i18n-placeholder="font.global" title="小号像素" data-i18n-title="font.smallTitle" onchange="gsAutoSave()">
+					<span class="font-size-tag" data-i18n="font.medium">中</span>
+					<input id="gsFontMedium" type="number" class="custom-size-input font-size-input" min="1" max="128" placeholder="全局" data-i18n-placeholder="font.global" title="中号像素" data-i18n-title="font.mediumTitle" onchange="gsAutoSave()">
+					<span class="font-size-tag" data-i18n="font.large">大</span>
+					<input id="gsFontLarge" type="number" class="custom-size-input font-size-input" min="1" max="128" placeholder="全局" data-i18n-placeholder="font.global" title="大号像素" data-i18n-title="font.largeTitle" onchange="gsAutoSave()">
+				</div>
+			</div>
+			<div class="gs-buttons">
+				<button class="btn" onclick="gsReset()" data-i18n="btn.resetGame">恢复游戏默认</button>
+				<button class="btn btn-primary" onclick="gsSaveAndClose()" data-i18n="btn.save">保存</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Bottom Navigation Bar -->
+	<nav class="bottom-nav" id="bottomNav">
+		<button class="bottom-nav-item active" data-tab="games" onclick="switchTab('games')">
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+				<rect x="2" y="6" width="20" height="12" rx="2"/>
+				<line x1="6" y1="12" x2="10" y2="12"/>
+				<line x1="8" y1="10" x2="8" y2="14"/>
+				<circle cx="15" cy="10.5" r="0.8" fill="currentColor" stroke="none"/>
+				<circle cx="17.5" cy="13" r="0.8" fill="currentColor" stroke="none"/>
+			</svg>
+			<span data-i18n="nav.games">游戏</span>
+		</button>
+		<button class="bottom-nav-item" data-tab="settings" onclick="switchTab('settings')">
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+				<circle cx="12" cy="12" r="3"/>
+				<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+			</svg>
+			<span data-i18n="nav.settings">设置</span>
+		</button>
+	</nav>
+
+	<script type="text/javascript">
+		var isbatch = 1;
+		var GameList = [];
+	</script>
+	<script>
+		loadVersionedPage('indexbatch', function (err) {
+			window.hideStartupLoader();
+			if (err) console.error(err);
+			(function () {
+				var topBar = document.getElementById('topAppBar');
+				var largeTitle = document.getElementById('topBarLargeTitle');
+				var smallTitle = document.getElementById('topBarSmallTitle');
+
+				function tabTitles() {
+					return { games: (window.I18n?I18n.t('title.batch'):'批量安装版'), settings: (window.I18n?I18n.t('title.settings'):'设置') };
+				}
+
+				window.switchTab = function (tabName) {
+					document.querySelectorAll('.tab-view').forEach(function (t) { t.classList.remove('active'); });
+					document.querySelectorAll('.bottom-nav-item').forEach(function (b) { b.classList.remove('active'); });
+					document.querySelectorAll('.rail-item').forEach(function (r) { r.classList.remove('active'); });
+					var tab = document.getElementById('tab-' + tabName);
+					if (tab) tab.classList.add('active');
+					var btn = document.querySelector('.bottom-nav-item[data-tab="' + tabName + '"]');
+					if (btn) btn.classList.add('active');
+					var rail = document.querySelector('.rail-item[data-tab="' + tabName + '"]');
+					if (rail) rail.classList.add('active');
+					if (tabTitles()[tabName]) {
+						largeTitle.textContent = tabTitles()[tabName];
+						smallTitle.textContent = tabTitles()[tabName];
+					}
+					var fab = document.getElementById('fab');
+					if (fab) fab.classList.toggle('hidden', tabName !== 'games');
+					var detail = document.getElementById('desktopDetail');
+					var appBar = document.getElementById('topAppBar');
+					var layout = document.querySelector('.page-layout');
+					var hideDetail = tabName !== 'games';
+					if (detail) detail.classList.toggle('hidden', hideDetail);
+					if (appBar) appBar.classList.toggle('no-detail', hideDetail);
+					if (layout) layout.classList.toggle('no-detail', hideDetail);
+					window.scrollTo({ top: 0 });
+				};
+
+				var _urlParams = new URLSearchParams(window.location.search);
+				var _initTab = _urlParams.get('tab');
+				if (_initTab) switchTab(_initTab);
+
+				var _scrolled = false;
+				window.addEventListener('scroll', function () {
+					var y = window.pageYOffset;
+					if (!_scrolled && y > 30) {
+						_scrolled = true;
+						topBar.classList.add('scrolled');
+					} else if (_scrolled && y < 5) {
+						_scrolled = false;
+						topBar.classList.remove('scrolled');
+					}
+				}, { passive: true });
+			})();
 			var _hmt = _hmt || [];
-			(function() {
+			(function () {
 				var hm = document.createElement("script");
 				hm.src = "http://hm.baidu.com/hm.js?9940f26304b1f1a1a415df829cd440f3";
 				var s = document.getElementsByTagName("script")[0];
 				s.parentNode.insertBefore(hm, s);
 			})();
-		</script>
+			if ('serviceWorker' in navigator) {
+				navigator.serviceWorker.register('sw.js?v=' + encodeURIComponent(window.__BUILD_VERSION__ || '1')).catch(function () { });
+			}
+		});
+	</script>
+</body>
 
-	</body>
 </html>

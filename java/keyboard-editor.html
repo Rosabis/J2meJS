@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>键盘设置</title>
+<meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="js/i18n.js"></script>
+<script type="text/javascript" src="keyboard-layouts.js"></script>
+<style>
+:root {
+  --bg: #f2f2f7; --card: #fff; --text: #000; --text2: #6c6c70; --text3: #aeaeb2;
+  --accent: #007aff; --divider: rgba(0,0,0,0.08); --hover: rgba(0,0,0,0.04);
+  --editor-bg: #6B5CE7;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d0d0d; --card: #1c1c1e; --text: #fff; --text2: #98989e; --text3: #636366;
+    --accent: #0a84ff; --divider: rgba(255,255,255,0.1); --hover: rgba(255,255,255,0.05);
+  }
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { height: 100%; overflow: hidden; }
+body { height: 100%; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "Helvetica Neue", sans-serif; background: var(--bg); color: var(--text); overflow: hidden; position: fixed; width: 100%; top: 0; left: 0; }
+
+/* ===== List View ===== */
+#listView { position: fixed; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; z-index: 1; background: var(--bg); }
+.lv-header { position: sticky; top: 0; z-index: 10; background: var(--bg); padding: 12px 16px 8px; display: flex; align-items: center; gap: 12px; }
+.lv-back { width: 36px; height: 36px; border-radius: 50%; border: none; background: var(--card); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.lv-title { font-size: 20px; font-weight: 700; flex: 1; }
+.lv-section { padding: 10px 16px 4px; font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.3px; }
+.lv-card { background: var(--card); border-radius: 12px; margin: 4px 16px 10px; overflow: hidden; }
+.lv-row { display: flex; align-items: center; padding: 14px 16px; gap: 12px; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background 0.15s; }
+.lv-row:active { background: var(--hover); }
+.lv-row + .lv-row { border-top: 0.5px solid var(--divider); }
+.lv-row-icon { width: 32px; text-align: center; font-size: 18px; flex-shrink: 0; }
+.lv-row-info { flex: 1; min-width: 0; }
+.lv-row-name { font-size: 16px; font-weight: 500; }
+.lv-row-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+.lv-row-arrow { color: var(--text3); flex-shrink: 0; }
+.lv-row-edit { width: 32px; height: 32px; border: none; background: none; color: var(--accent); cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+.lv-row-edit:active { background: var(--hover); }
+.lv-default { display: flex; align-items: center; padding: 14px 16px; gap: 12px; }
+.lv-default-label { flex: 1; font-size: 16px; font-weight: 500; }
+.lv-default-value { font-size: 15px; color: var(--text2); cursor: pointer; display: flex; align-items: center; gap: 4px; -webkit-tap-highlight-color: transparent; }
+.lv-default-value svg { color: var(--text3); }
+.lv-actions { display: flex; gap: 10px; padding: 16px; }
+.lv-actions button { flex: 1; padding: 12px; border-radius: 10px; border: none; font-size: 15px; font-weight: 500; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.lv-btn-add { background: var(--accent); color: #fff; }
+.lv-btn-add:active { opacity: 0.8; }
+.lv-btn-secondary { background: var(--card); color: var(--accent); }
+.lv-btn-secondary:active { background: var(--hover); }
+
+/* ===== Editor View ===== */
+#editorView { display: none; flex-direction: column; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 2; }
+#editorView.active { display: flex; }
+#listView.hidden { display: none; }
+.ed-header { display: flex; align-items: center; padding: 10px 16px; gap: 12px; background: var(--editor-bg); flex-shrink: 0; }
+.ed-header button { border: none; background: rgba(255,255,255,0.2); color: #fff; padding: 8px 18px; border-radius: 20px; font-size: 15px; font-weight: 500; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.ed-header button:active { background: rgba(255,255,255,0.35); }
+.ed-header-title { flex: 1; text-align: center; color: #fff; font-size: 17px; font-weight: 600; }
+.ed-canvas { flex: 1; background: var(--editor-bg); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.ed-zone { width: 100%; max-width: 440px; aspect-ratio: 4 / 5; border: 2px dashed rgba(255,255,255,0.3); border-radius: 12px; position: relative; }
+.ed-zone.square-layout { max-width: 760px; aspect-ratio: 21 / 10; }
+.ed-hint { position: absolute; bottom: 8px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.55); font-size: 12px; pointer-events: none; }
+.ed-btn { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.92); color: #333; font-weight: 600; display: flex; align-items: center; justify-content: center; transform: translate(-50%, -50%); cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; box-shadow: 0 2px 8px rgba(0,0,0,0.12); z-index: 2; }
+.ed-btn.rect { border-radius: 10px; box-sizing: border-box; }
+.ed-btn.selected { outline: 3px solid var(--accent); outline-offset: 2px; }
+.ed-btn-x { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%; background: #ff3b30; color: #fff; font-size: 11px; line-height: 20px; text-align: center; cursor: pointer; z-index: 3; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+.ed-joy { position: absolute; border-radius: 50%; background: rgba(140,120,220,0.28); border: 2px solid rgba(255,255,255,0.22); transform: translate(-50%, -50%); cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; z-index: 2; box-sizing: border-box; }
+.ed-joy.selected { outline: 3px solid var(--accent); outline-offset: 2px; }
+.ed-joy-inner { position: absolute; width: 40%; height: 40%; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 50%; background: rgba(255,255,255,0.7); pointer-events: none; }
+.ed-joy .ed-btn-x { top: -8px; right: -8px; }
+
+/* Bottom panel */
+.ed-bottom { background: var(--card); border-top: 0.5px solid var(--divider); flex-shrink: 0; padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+.ed-info { margin-bottom: 10px; }
+.ed-info-name { font-size: 17px; font-weight: 700; }
+.ed-info-count { font-size: 13px; color: var(--text2); margin-top: 2px; }
+.ed-toolbar { display: flex; gap: 10px; }
+.ed-toolbar button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border-radius: 10px; border: none; background: var(--bg); color: var(--text); font-size: 14px; font-weight: 500; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.ed-toolbar button:active { background: var(--divider); }
+
+/* Size slider */
+.ed-size-bar { display: none; align-items: center; gap: 10px; padding: 10px 0 6px; }
+.ed-size-bar.active { display: flex; }
+.ed-size-bar label { font-size: 13px; color: var(--text2); white-space: nowrap; }
+.ed-size-bar input[type=range] { flex: 1; accent-color: var(--accent); }
+.ed-size-bar .size-val { font-size: 13px; color: var(--text2); min-width: 30px; text-align: center; }
+
+/* ===== Bottom Sheet ===== */
+.sheet-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.35); z-index: 100; display: none; }
+.sheet-overlay.show { display: block; }
+.sheet { position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-radius: 16px 16px 0 0; z-index: 101; max-height: 70vh; max-width: 500px; margin-left: auto; margin-right: auto; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.3s ease; padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+.sheet-overlay.show .sheet { transform: translateY(0); }
+.sheet-header { display: flex; align-items: center; padding: 16px 20px 12px; border-bottom: 0.5px solid var(--divider); }
+.sheet-title { flex: 1; font-size: 17px; font-weight: 600; }
+.sheet-close { border: none; background: none; color: var(--text2); font-size: 15px; cursor: pointer; padding: 4px 8px; }
+.sheet-body { overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 8px 16px 16px; }
+.sheet-section { font-size: 13px; font-weight: 600; color: var(--text2); padding: 12px 0 6px; }
+.sheet-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+.sheet-btn-item { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 56px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.sheet-btn-circle { width: 44px; height: 44px; border-radius: 50%; background: #e5e5ea; color: #333; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; position: relative; }
+.sheet-btn-circle .check { position: absolute; top: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: #34C759; color: #fff; font-size: 10px; line-height: 16px; text-align: center; }
+.sheet-btn-circle.added { opacity: 0.45; }
+.sheet-btn-label { font-size: 11px; color: var(--text2); text-align: center; }
+
+@media (prefers-color-scheme: dark) {
+  .sheet-btn-circle { background: #3a3a3c; color: #eee; }
+  .ed-btn { background: rgba(55,55,65,0.92); color: #eee; }
+}
+
+/* Preset sheet item */
+.sheet-preset-item { display: flex; align-items: center; padding: 14px 0; gap: 12px; cursor: pointer; -webkit-tap-highlight-color: transparent; border-bottom: 0.5px solid var(--divider); }
+.sheet-preset-item:last-child { border-bottom: none; }
+.sheet-preset-item:active { opacity: 0.7; }
+.sheet-preset-name { flex: 1; font-size: 16px; font-weight: 500; }
+.sheet-preset-count { font-size: 13px; color: var(--text2); }
+
+/* Preview sheet */
+.pv-zone { width: 100%; max-width: 360px; aspect-ratio: 4 / 5; border-radius: 12px; position: relative; margin: 12px auto 16px; }
+.pv-zone.square-layout { max-width: 680px; aspect-ratio: 21 / 10; }
+.pv-btn { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.92); color: #333; font-weight: 600; font-size: 12px; display: flex; align-items: center; justify-content: center; transform: translate(-50%, -50%); box-shadow: 0 2px 6px rgba(0,0,0,0.12); box-sizing: border-box; }
+.pv-btn.rect { border-radius: 10px; }
+.pv-joy { position: absolute; border-radius: 50%; background: rgba(140,120,220,0.28); border: 2px solid rgba(255,255,255,0.22); transform: translate(-50%, -50%); box-sizing: border-box; }
+.pv-joy-inner { position: absolute; width: 40%; height: 40%; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 50%; background: rgba(255,255,255,0.7); }
+.pv-actions { display: flex; gap: 10px; }
+.pv-actions button { flex: 1; padding: 12px; border-radius: 10px; border: none; font-size: 15px; font-weight: 500; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pv-actions button:active { opacity: 0.8; }
+.pv-btn-use { background: var(--accent); color: #fff; }
+.pv-btn-edit { background: var(--bg); color: var(--text); }
+@media (prefers-color-scheme: dark) {
+  .pv-btn { background: rgba(55,55,65,0.92); color: #eee; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== List View ===== -->
+<div id="listView">
+  <div class="lv-header">
+    <button class="lv-back" onclick="window.location.href='index.html?tab=settings'">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+    <div class="lv-title" data-i18n="kb.title">键盘设置</div>
+  </div>
+
+  <div class="lv-section" data-i18n="kb.defaultSection">默认键盘</div>
+  <div class="lv-card">
+    <div class="lv-default">
+      <div class="lv-default-label" data-i18n="kb.defaultLabel">新游戏默认键盘</div>
+      <div class="lv-default-value" id="defaultLayoutBtn" onclick="showDefaultPicker()">
+        <span id="defaultLayoutText">经典键盘</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 15l4 4 4-4M8 9l4-4 4 4"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="lv-section" data-i18n="kb.presets">系统预设</div>
+  <div class="lv-card" id="presetsCard"></div>
+
+  <div class="lv-section" data-i18n="kb.mine">我的键盘</div>
+  <div class="lv-card" id="customCard">
+    <div class="lv-row" style="justify-content:center;color:var(--text3);font-size:14px;cursor:default;" id="noCustomHint" data-i18n="kb.empty">暂无自定义键盘</div>
+  </div>
+
+  <div class="lv-actions">
+    <button class="lv-btn-add" onclick="createCustomLayout()" data-i18n="kb.new">新建键盘</button>
+  </div>
+
+  <div style="height: 40px;"></div>
+</div>
+
+<!-- ===== Editor View ===== -->
+<div id="editorView">
+  <div class="ed-header">
+    <button onclick="editorCancel()" data-i18n="kb.cancel">取消</button>
+    <div class="ed-header-title" data-i18n="kb.editLayout">编辑布局</div>
+    <button onclick="editorApply()" data-i18n="kb.apply">应用</button>
+  </div>
+  <div class="ed-canvas" id="editorCanvas">
+    <div class="ed-zone" id="editorZone"></div>
+    <div class="ed-hint" data-i18n="kb.hint">拖动按钮调整位置 · 点击选中后可调整大小</div>
+  </div>
+  <div class="ed-bottom">
+    <div class="ed-info">
+      <div class="ed-info-name" id="edInfoName"></div>
+      <div class="ed-info-count" id="edInfoCount"></div>
+    </div>
+    <div class="ed-size-bar" id="edSizeBar">
+      <label data-i18n="kb.size">大小</label>
+      <input type="range" id="edSizeRange" min="6" max="40" value="12" oninput="edSizeChange(this.value)">
+      <span class="size-val" id="edSizeVal">12</span>
+    </div>
+    <div class="ed-toolbar">
+      <button onclick="showPresetSheet()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span data-i18n="kb.preset">预设</span>
+      </button>
+      <button onclick="showAddSheet()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span data-i18n="kb.add">添加</span>
+      </button>
+      <button onclick="editorReset()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        <span data-i18n="kb.reset">重置</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Preset Sheet ===== -->
+<div class="sheet-overlay" id="presetSheetOverlay" onclick="closePresetSheet()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-header">
+      <div class="sheet-title" data-i18n="kb.pickPreset">选择预设</div>
+      <button class="sheet-close" onclick="closePresetSheet()" data-i18n="kb.close">关闭</button>
+    </div>
+    <div class="sheet-body" id="presetSheetBody"></div>
+  </div>
+</div>
+
+<!-- ===== Add Button Sheet ===== -->
+<div class="sheet-overlay" id="addSheetOverlay" onclick="closeAddSheet()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-header">
+      <div class="sheet-title" data-i18n="kb.addKey">添加按键</div>
+      <button class="sheet-close" onclick="closeAddSheet()" data-i18n="kb.close">关闭</button>
+    </div>
+    <div class="sheet-body" id="addSheetBody"></div>
+  </div>
+</div>
+
+<!-- ===== Preview Sheet ===== -->
+<div class="sheet-overlay" id="previewSheetOverlay" onclick="closePreviewSheet()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-header">
+      <div class="sheet-title" id="previewSheetTitle" data-i18n="kb.preview">预览</div>
+      <button class="sheet-close" onclick="closePreviewSheet()" data-i18n="kb.close">关闭</button>
+    </div>
+    <div class="sheet-body">
+      <div class="pv-zone" id="previewZone"></div>
+      <div class="pv-actions">
+        <button class="pv-btn-edit" id="previewEditBtn" data-i18n="kb.edit">编辑</button>
+        <button class="pv-btn-use" id="previewUseBtn" data-i18n="kb.useLayout">使用此布局</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Default Picker Sheet ===== -->
+<div class="sheet-overlay" id="defaultPickerOverlay" onclick="closeDefaultPicker()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-header">
+      <div class="sheet-title" data-i18n="kb.pickDefault">选择默认键盘</div>
+      <button class="sheet-close" onclick="closeDefaultPicker()" data-i18n="kb.close">关闭</button>
+    </div>
+    <div class="sheet-body" id="defaultPickerBody"></div>
+  </div>
+</div>
+
+<script>
+function t(key, vars) {
+  return (window.I18n && I18n.t) ? I18n.t(key, vars) : key;
+}
+function layoutLabel(name) {
+  return (window.I18n && I18n.layoutName) ? I18n.layoutName(name) : name;
+}
+var KL = KeyboardLayouts;
+var _editLayout = null;
+var _editOriginal = null;
+var _editSource = null; // { type: 'preset'|'custom', index: number }
+var _selectedIdx = -1;
+var _dragState = null;
+
+// ===== List View =====
+function renderList() {
+  var presetsCard = document.getElementById('presetsCard');
+  presetsCard.innerHTML = '';
+  var presets = KL.PRESETS;
+  for (var i = 0; i < presets.length; i++) {
+    (function(idx) {
+      var p = presets[idx];
+      var row = document.createElement('div');
+      row.className = 'lv-row';
+      row.innerHTML = '<div class="lv-row-info"><div class="lv-row-name">' + esc(layoutLabel(p.name)) +
+        '</div><div class="lv-row-sub">' + t('kb.keyCount', { n: p.buttons.length }) + '</div></div>' +
+        '<div class="lv-row-edit" title="' + t('kb.edit') + '"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></div>';
+      row.querySelector('.lv-row-edit').addEventListener('click', function(e) {
+        e.stopPropagation();
+        openEditor({ type: 'preset', index: idx }, KL.cloneLayout(p));
+      });
+      row.addEventListener('click', function() {
+        showPreview({ type: 'preset', index: idx }, p);
+      });
+      presetsCard.appendChild(row);
+    })(i);
+  }
+
+  var customCard = document.getElementById('customCard');
+  var customs = KL.getCustomLayouts();
+  customCard.innerHTML = '';
+  if (customs.length === 0) {
+    customCard.innerHTML = '<div class="lv-row" style="justify-content:center;color:var(--text3);font-size:14px;cursor:default;">' + t('kb.empty') + '</div>';
+  } else {
+    for (var i = 0; i < customs.length; i++) {
+      (function(idx) {
+        var c = customs[idx];
+        var row = document.createElement('div');
+        row.className = 'lv-row';
+        row.innerHTML = '<div class="lv-row-info"><div class="lv-row-name">' + esc(c.name) +
+          '</div><div class="lv-row-sub">' + t('kb.keyCount', { n: c.buttons.length }) + '</div></div>' +
+          '<div class="lv-row-edit" title="' + t('kb.edit') + '"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></div>';
+        row.querySelector('.lv-row-edit').addEventListener('click', function(e) {
+          e.stopPropagation();
+          openEditor({ type: 'custom', index: idx }, KL.cloneLayout(c));
+        });
+        row.addEventListener('click', function() {
+          showPreview({ type: 'custom', index: idx }, c);
+        });
+        customCard.appendChild(row);
+      })(i);
+    }
+  }
+
+  updateDefaultText();
+}
+
+function updateDefaultText() {
+  var name = KL.getActiveLayoutName();
+  var el = document.getElementById('defaultLayoutText');
+  if (el) el.textContent = layoutLabel(name);
+}
+
+function createCustomLayout() {
+  var name = prompt(t('kb.namePrompt'), t('kb.nameDefault'));
+  if (!name) return;
+  var layout = { name: name, buttons: [] };
+  KL.addCustomLayout(layout);
+  var customs = KL.getCustomLayouts();
+  openEditor({ type: 'custom', index: customs.length - 1 }, KL.cloneLayout(layout));
+  renderList();
+}
+
+function showDefaultPicker() {
+  var body = document.getElementById('defaultPickerBody');
+  body.innerHTML = '';
+  var all = KL.PRESETS.concat(KL.getCustomLayouts());
+  for (var i = 0; i < all.length; i++) {
+    (function(layout) {
+      var item = document.createElement('div');
+      item.className = 'sheet-preset-item';
+      item.innerHTML = '<div class="sheet-preset-name">' + esc(layoutLabel(layout.name)) + '</div><div class="sheet-preset-count">' + t('kb.keyCount', { n: layout.buttons.length }) + '</div>';
+      item.addEventListener('click', function() {
+        KL.setActiveLayout(KL.cloneLayout(layout), layout.name);
+        updateDefaultText();
+        closeDefaultPicker();
+      });
+      body.appendChild(item);
+    })(all[i]);
+  }
+  document.getElementById('defaultPickerOverlay').classList.add('show');
+}
+
+function closeDefaultPicker() {
+  document.getElementById('defaultPickerOverlay').classList.remove('show');
+}
+
+// ===== Editor =====
+function openEditor(source, layout) {
+  _editSource = source;
+  _editLayout = layout;
+  _editOriginal = KL.cloneLayout(layout);
+  _selectedIdx = -1;
+
+  var bgColor = KL.getBgColor() || '#6B5CE7';
+  document.querySelector('.ed-canvas').style.background = bgColor;
+  document.querySelector('.ed-header').style.background = bgColor;
+
+  document.getElementById('listView').classList.add('hidden');
+  document.getElementById('editorView').classList.add('active');
+  renderEditor();
+}
+
+function editorCancel() {
+  document.getElementById('editorView').classList.remove('active');
+  document.getElementById('listView').classList.remove('hidden');
+}
+
+function editorApply() {
+  if (_editSource.type === 'custom') {
+    KL.updateCustomLayout(_editSource.index, KL.cloneLayout(_editLayout));
+  } else {
+    var name = t('kb.customSuffix', { name: _editLayout.name });
+    _editLayout.name = name;
+    KL.addCustomLayout(KL.cloneLayout(_editLayout));
+  }
+  KL.setActiveLayout(KL.cloneLayout(_editLayout), _editLayout.name);
+
+  document.getElementById('editorView').classList.remove('active');
+  document.getElementById('listView').classList.remove('hidden');
+  renderList();
+}
+
+function editorReset() {
+  _editLayout = KL.cloneLayout(_editOriginal);
+  _selectedIdx = -1;
+  renderEditor();
+}
+
+function renderEditor() {
+  var zone = document.getElementById('editorZone');
+  zone.innerHTML = '';
+  zone.classList.toggle('square-layout', _editLayout.className === 'square-keypad');
+
+  var btns = _editLayout.buttons;
+  for (var i = 0; i < btns.length; i++) {
+    var b = btns[i];
+    var def = KL.BUTTON_DEFS[b.id];
+    if (!def) continue;
+
+    if (def.isJoystick) {
+      var el = document.createElement('div');
+      el.className = 'ed-joy';
+      el.setAttribute('data-idx', i);
+      el.style.left = b.x + '%';
+      el.style.top = b.y + '%';
+      el.style.width = b.size + '%';
+      el.style.height = '0';
+      el.style.paddingBottom = b.size + '%';
+      el.innerHTML = '<div class="ed-joy-inner"></div><div class="ed-btn-x" data-action="remove">✕</div>';
+      if (i === _selectedIdx) el.classList.add('selected');
+      zone.appendChild(el);
+    } else {
+      var el = document.createElement('div');
+      var isRect = b.shape === 'rect';
+      el.className = 'ed-btn' + (isRect ? ' rect' : '');
+      el.setAttribute('data-idx', i);
+      el.style.left = b.x + '%';
+      el.style.top = b.y + '%';
+      el.style.width = (isRect ? b.width : b.size) + '%';
+      el.style.height = isRect ? b.height + '%' : '0';
+      el.style.paddingBottom = isRect ? '0' : b.size + '%';
+      el.style.fontSize = '14px';
+      el.innerHTML = '<span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">' + esc(b.label || def.label) + '</span><div class="ed-btn-x" data-action="remove">✕</div>';
+      if (i === _selectedIdx) el.classList.add('selected');
+      zone.appendChild(el);
+    }
+  }
+
+  document.getElementById('edInfoName').textContent = _editLayout.name;
+  document.getElementById('edInfoCount').textContent = t('kb.keyCount', { n: btns.length });
+
+  var sizeBar = document.getElementById('edSizeBar');
+  if (_selectedIdx >= 0 && _selectedIdx < btns.length) {
+    sizeBar.classList.add('active');
+    var selected = btns[_selectedIdx];
+    var selectedSize = selected.shape === 'rect' ? selected.width : selected.size;
+    document.getElementById('edSizeRange').value = selectedSize;
+    document.getElementById('edSizeVal').textContent = selectedSize;
+  } else {
+    sizeBar.classList.remove('active');
+  }
+}
+
+function edSizeChange(val) {
+  val = parseInt(val);
+  document.getElementById('edSizeVal').textContent = val;
+  if (_selectedIdx >= 0 && _selectedIdx < _editLayout.buttons.length) {
+    var selected = _editLayout.buttons[_selectedIdx];
+    if (selected.shape === 'rect') {
+      var ratio = (selected.height || 20) / (selected.width || 14);
+      selected.width = val;
+      selected.height = Math.round(val * ratio * 10) / 10;
+    } else {
+      selected.size = val;
+    }
+    renderEditor();
+  }
+}
+
+// Editor touch/mouse handling
+(function() {
+  var zone = document.getElementById('editorZone');
+
+  function getIdx(el) {
+    while (el && el !== zone) {
+      if (el.getAttribute && el.getAttribute('data-idx') !== null) return parseInt(el.getAttribute('data-idx'));
+      el = el.parentElement;
+    }
+    return -1;
+  }
+
+  function _findElByIdx(idx) {
+    return zone.querySelector('[data-idx="' + idx + '"]');
+  }
+
+  zone.addEventListener('touchstart', function(e) {
+    var t = e.touches[0];
+    var target = e.target;
+
+    if (target.getAttribute && target.getAttribute('data-action') === 'remove') {
+      e.preventDefault();
+      var idx = getIdx(target);
+      if (idx >= 0) {
+        _editLayout.buttons.splice(idx, 1);
+        if (_selectedIdx === idx) _selectedIdx = -1;
+        else if (_selectedIdx > idx) _selectedIdx--;
+        renderEditor();
+      }
+      return;
+    }
+
+    var idx = getIdx(target);
+    if (idx >= 0) {
+      e.preventDefault();
+      var rect = zone.getBoundingClientRect();
+      _dragState = {
+        idx: idx, startX: t.clientX, startY: t.clientY,
+        origX: _editLayout.buttons[idx].x, origY: _editLayout.buttons[idx].y,
+        zoneW: rect.width, zoneH: rect.height, moved: false,
+        el: _findElByIdx(idx)
+      };
+    } else {
+      _selectedIdx = -1;
+      renderEditor();
+    }
+  }, { passive: false });
+
+  zone.addEventListener('touchmove', function(e) {
+    if (!_dragState) return;
+    e.preventDefault();
+    var t = e.touches[0];
+    var dx = t.clientX - _dragState.startX;
+    var dy = t.clientY - _dragState.startY;
+
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) _dragState.moved = true;
+
+    var newX = _dragState.origX + (dx / _dragState.zoneW) * 100;
+    var newY = _dragState.origY + (dy / _dragState.zoneH) * 100;
+    newX = Math.max(2, Math.min(98, newX));
+    newY = Math.max(2, Math.min(98, newY));
+
+    var rx = Math.round(newX * 10) / 10;
+    var ry = Math.round(newY * 10) / 10;
+    _editLayout.buttons[_dragState.idx].x = rx;
+    _editLayout.buttons[_dragState.idx].y = ry;
+
+    if (_dragState.el) {
+      _dragState.el.style.left = rx + '%';
+      _dragState.el.style.top = ry + '%';
+    }
+  }, { passive: false });
+
+  zone.addEventListener('touchend', function(e) {
+    if (_dragState) {
+      if (!_dragState.moved) {
+        _selectedIdx = (_selectedIdx === _dragState.idx) ? -1 : _dragState.idx;
+      }
+      _dragState = null;
+      renderEditor();
+    }
+  });
+
+  // Mouse support
+  zone.addEventListener('mousedown', function(e) {
+    var target = e.target;
+    if (target.getAttribute && target.getAttribute('data-action') === 'remove') {
+      var idx = getIdx(target);
+      if (idx >= 0) {
+        _editLayout.buttons.splice(idx, 1);
+        if (_selectedIdx === idx) _selectedIdx = -1;
+        else if (_selectedIdx > idx) _selectedIdx--;
+        renderEditor();
+      }
+      return;
+    }
+    var idx = getIdx(target);
+    if (idx >= 0) {
+      e.preventDefault();
+      var rect = zone.getBoundingClientRect();
+      _dragState = {
+        idx: idx, startX: e.clientX, startY: e.clientY,
+        origX: _editLayout.buttons[idx].x, origY: _editLayout.buttons[idx].y,
+        zoneW: rect.width, zoneH: rect.height, moved: false,
+        el: _findElByIdx(idx)
+      };
+    } else {
+      _selectedIdx = -1;
+      renderEditor();
+    }
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!_dragState) return;
+    var dx = e.clientX - _dragState.startX;
+    var dy = e.clientY - _dragState.startY;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) _dragState.moved = true;
+    var newX = _dragState.origX + (dx / _dragState.zoneW) * 100;
+    var newY = _dragState.origY + (dy / _dragState.zoneH) * 100;
+    newX = Math.max(2, Math.min(98, newX));
+    newY = Math.max(2, Math.min(98, newY));
+
+    var rx = Math.round(newX * 10) / 10;
+    var ry = Math.round(newY * 10) / 10;
+    _editLayout.buttons[_dragState.idx].x = rx;
+    _editLayout.buttons[_dragState.idx].y = ry;
+
+    if (_dragState.el) {
+      _dragState.el.style.left = rx + '%';
+      _dragState.el.style.top = ry + '%';
+    }
+  });
+
+  document.addEventListener('mouseup', function() {
+    if (_dragState) {
+      if (!_dragState.moved) {
+        _selectedIdx = (_selectedIdx === _dragState.idx) ? -1 : _dragState.idx;
+      }
+      _dragState = null;
+      renderEditor();
+    }
+  });
+})();
+
+// ===== Preset Sheet =====
+function showPresetSheet() {
+  var body = document.getElementById('presetSheetBody');
+  body.innerHTML = '';
+  var presets = KL.PRESETS;
+  for (var i = 0; i < presets.length; i++) {
+    (function(p) {
+      var item = document.createElement('div');
+      item.className = 'sheet-preset-item';
+      item.innerHTML = '<div class="sheet-preset-name">' + esc(layoutLabel(p.name)) + '</div><div class="sheet-preset-count">' + t('kb.keyCount', { n: p.buttons.length }) + '</div>';
+      item.addEventListener('click', function() {
+        var cloned = KL.cloneLayout(p);
+        _editLayout.buttons = cloned.buttons;
+        _editLayout.className = cloned.className || '';
+        _selectedIdx = -1;
+        renderEditor();
+        closePresetSheet();
+      });
+      body.appendChild(item);
+    })(presets[i]);
+  }
+  document.getElementById('presetSheetOverlay').classList.add('show');
+}
+
+function closePresetSheet() {
+  document.getElementById('presetSheetOverlay').classList.remove('show');
+}
+
+// ===== Add Button Sheet =====
+function showAddSheet() {
+  var body = document.getElementById('addSheetBody');
+  body.innerHTML = '';
+
+  var existing = {};
+  for (var i = 0; i < _editLayout.buttons.length; i++) {
+    existing[_editLayout.buttons[i].id] = true;
+  }
+
+  var categories = ['direction', 'joystick', 'softkey', 'numkey'];
+  var catLabels = { direction: t('kb.cat.direction'), joystick: t('kb.cat.joystick'), softkey: t('kb.cat.softkey'), numkey: t('kb.cat.numkey') };
+
+  for (var ci = 0; ci < categories.length; ci++) {
+    var cat = categories[ci];
+    var secEl = document.createElement('div');
+    secEl.className = 'sheet-section';
+    secEl.textContent = catLabels[cat];
+    body.appendChild(secEl);
+
+    var grid = document.createElement('div');
+    grid.className = 'sheet-grid';
+
+    for (var id in KL.BUTTON_DEFS) {
+      var def = KL.BUTTON_DEFS[id];
+      if (def.category !== cat) continue;
+      (function(btnId, btnDef) {
+        var item = document.createElement('div');
+        item.className = 'sheet-btn-item';
+        var added = !!existing[btnId];
+        var circle = document.createElement('div');
+        circle.className = 'sheet-btn-circle' + (added ? ' added' : '');
+        circle.textContent = btnDef.isJoystick ? '⊙' : btnDef.label;
+        if (added) circle.innerHTML += '<span class="check">✓</span>';
+        var label = document.createElement('div');
+        label.className = 'sheet-btn-label';
+        label.textContent = btnDef.desc;
+
+        item.appendChild(circle);
+        item.appendChild(label);
+
+        if (!added) {
+          item.addEventListener('click', function() {
+            _editLayout.buttons.push({ id: btnId, x: 50, y: 50, size: btnDef.isJoystick ? 28 : 12 });
+            _selectedIdx = _editLayout.buttons.length - 1;
+            renderEditor();
+            closeAddSheet();
+          });
+        }
+
+        grid.appendChild(item);
+      })(id, def);
+    }
+
+    body.appendChild(grid);
+  }
+
+  document.getElementById('addSheetOverlay').classList.add('show');
+}
+
+function closeAddSheet() {
+  document.getElementById('addSheetOverlay').classList.remove('show');
+}
+
+// ===== Preview =====
+var _previewSource = null;
+var _previewLayout = null;
+
+function showPreview(source, layout) {
+  _previewSource = source;
+  _previewLayout = layout;
+
+  document.getElementById('previewSheetTitle').textContent = layout.name;
+  var zone = document.getElementById('previewZone');
+  var bgColor = KL.getBgColor() || '#6B5CE7';
+  zone.style.background = bgColor;
+  zone.innerHTML = '';
+  zone.classList.toggle('square-layout', layout.className === 'square-keypad');
+
+  var btns = layout.buttons || [];
+  for (var i = 0; i < btns.length; i++) {
+    var b = btns[i];
+    var def = KL.BUTTON_DEFS[b.id];
+    if (!def) continue;
+
+    if (def.isJoystick) {
+      var el = document.createElement('div');
+      el.className = 'pv-joy';
+      el.style.left = b.x + '%';
+      el.style.top = b.y + '%';
+      el.style.width = b.size + '%';
+      el.style.height = '0';
+      el.style.paddingBottom = b.size + '%';
+      el.innerHTML = '<div class="pv-joy-inner"></div>';
+      zone.appendChild(el);
+    } else {
+      var el = document.createElement('div');
+      var isRect = b.shape === 'rect';
+      el.className = 'pv-btn' + (isRect ? ' rect' : '');
+      el.style.left = b.x + '%';
+      el.style.top = b.y + '%';
+      el.style.width = (isRect ? b.width : b.size) + '%';
+      el.style.height = isRect ? b.height + '%' : '0';
+      el.style.paddingBottom = isRect ? '0' : b.size + '%';
+      el.innerHTML = '<span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">' + esc(b.label || def.label) + '</span>';
+      zone.appendChild(el);
+    }
+  }
+
+  if (btns.length === 0) {
+    zone.innerHTML = '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(255,255,255,0.5);font-size:14px;">' + t('layout.none') + '</div>';
+  }
+
+  var useBtn = document.getElementById('previewUseBtn');
+  var editBtn = document.getElementById('previewEditBtn');
+  useBtn.onclick = function() {
+    KL.setActiveLayout(KL.cloneLayout(_previewLayout), _previewLayout.name);
+    updateDefaultText();
+    closePreviewSheet();
+  };
+  editBtn.onclick = function() {
+    closePreviewSheet();
+    openEditor(_previewSource, KL.cloneLayout(_previewLayout));
+  };
+
+  document.getElementById('previewSheetOverlay').classList.add('show');
+}
+
+function closePreviewSheet() {
+  document.getElementById('previewSheetOverlay').classList.remove('show');
+}
+
+// ===== Helpers =====
+function esc(s) {
+  var d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ===== Init =====
+function _keyboardEditorOnLoad() {
+  if (window.I18n) I18n.apply(document);
+  renderList();
+
+  // Auto-open editor if URL has params
+  var params = new URLSearchParams(window.location.search);
+  var presetName = params.get('preset');
+  if (presetName) {
+    var p = KL.getPreset(presetName);
+    if (p) openEditor({ type: 'preset', index: KL.PRESETS.indexOf(p) }, KL.cloneLayout(p));
+  }
+  if (window.I18n) {
+    I18n.onChange(function () {
+      I18n.apply(document);
+      renderList();
+    });
+  }
+}
+if (document.readyState === 'complete') {
+  _keyboardEditorOnLoad();
+} else {
+  window.addEventListener('load', _keyboardEditorOnLoad);
+}
+</script>
+</body>
+</html>

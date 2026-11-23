@@ -1,0 +1,6 @@
+{
+  "languages": [
+    { "code": "zh-CN", "name": "简体中文", "builtin": true },
+    { "code": "en", "name": "English", "builtin": true }
+  ]
+}
